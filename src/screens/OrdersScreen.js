@@ -262,18 +262,18 @@ const OrdersScreen = () => {
                                         status={item.status}
                                         price={`₹ ${Number(item.price).toFixed(2)}`}
                                         onModify={() => {
-                                            navigation.navigate('TradeOrder', {
-                                                symbol: item.trading_symbol,
-                                                token: item.symbol_token,
-                                                name: item.script,
-                                                price: item.price,
-                                                quantity: item.quantity,
-                                                stoploss: item.stop_loss,
-                                                target: 0,
-                                                producttype: item.product_type,
-                                                internaltype: 'Modify',
-                                                orderid: item.orderid,
-                                            });
+                                            // navigation.navigate('TradeOrder', {
+                                            //     symbol: item.trading_symbol,
+                                            //     token: item.symbol_token,
+                                            //     name: item.script,
+                                            //     price: item.price,
+                                            //     quantity: item.quantity,
+                                            //     stoploss: item.stop_loss,
+                                            //     target: 0,
+                                            //     producttype: item.product_type,
+                                            //     internaltype: 'Modify',
+                                            //     orderid: item.orderid,
+                                            // });
                                         }}
                                         onCancel={async () => {
                                             Alert.alert(
