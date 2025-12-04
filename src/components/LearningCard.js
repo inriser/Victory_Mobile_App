@@ -1,0 +1,277 @@
+import React, { useEffect, useState } from 'react';
+import {
+    View,
+    Text,
+    ImageBackground,
+    StyleSheet,
+    ScrollView,
+    TouchableOpacity,
+    Image
+} from 'react-native';
+import RightArrow from "../../assets/RightArrow.jpg"
+import { MaterialIcons } from '@expo/vector-icons';
+import axiosInstance from '../api/axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useIsFocused } from "@react-navigation/native";
+
+
+// Mini card reusable component
+const MiniCard = ({ number, title, onPress }) => (
+    <View style={styles.miniCard} onPress={onPress}>
+        <View style={styles.miniCardCircle}>
+            <Text style={styles.miniCardNumber}>{number}</Text>
+        </View>
+        <Text
+            style={styles.miniCardTitle}
+            numberOfLines={2}
+            ellipsizeMode="tail">{title}</Text>
+    </View>
+);
+
+const LearningCard = ({
+    id,
+    title,
+    bgImage,
+    headline = "Understand how the stock market works, its participants, and why prices move.",
+    onMiniCardPress = () => { },
+    onArrowPress = () => { },
+    initialProgress = 0,
+}) => {
+
+    const isFocused = useIsFocused();
+    const [chapters, setChapters] = useState([]);
+    const [progress, setProgress] = useState(initialProgress);
+
+    useEffect(() => {
+    if (isFocused) {
+        let mounted = true;
+        const load = async () => {
+            if (!id) return;
+            try {
+                const chRes = await axiosInstance.get(`/chaptermaster/module/${id}`);
+                const chData = chRes.data.data ?? [];
+                if (mounted) setChapters(chData);
+
+                const userId = await AsyncStorage.getItem("userId");
+                if (!userId) {
+                    setProgress(initialProgress);
+                    return;
+                }
+
+                const res = await axiosInstance.get(`/learningprogress/module/${userId}/${id}`);
+                const percentage = res.data.data?.progress ?? 0;
+                if (mounted) setProgress(percentage / 100);
+            } catch (err) {
+                console.log("LearningCard load error:", err);
+            }
+        };
+        load();
+        return () => { mounted = false };
+    }
+}, [id, isFocused]);
+
+
+    const getChunk = () => {
+        const n = chapters.length || 0;
+        const chunk = 100 / (n + 1);
+        return Number(chunk.toFixed(2));
+    };
+
+    // when user clicks arrow: update module-level progress (chapterid = null)
+    const handleArrowPress = async () => {
+        try {
+            const userId = await AsyncStorage.getItem("userId");
+            if (!userId) {
+                // optionally redirect to login
+                onArrowPress();
+                return;
+            }
+
+            const chunk = getChunk();
+
+            // Call backend to insert progress row (idempotent if already present)
+            await axiosInstance.post("/learningprogress/update", {
+                userid: Number(userId),
+                moduleid: id,
+                chapterid: null,
+                progress: chunk
+            });
+
+            // refresh progress
+            const res = await axiosInstance.get(`/learningprogress/module/${userId}/${id}`);
+            const percentage = res.data.data?.progress ?? 0;
+            setProgress(percentage / 100);
+        } catch (err) {
+            console.log("Error updating module progress:", err);
+        } finally {
+            // navigate afterwards (or do inside onArrowPress)
+            onArrowPress();
+        }
+    };
+
+    return (
+        <View style={styles.container}>
+            <View style={styles.headerRow}>
+                <Text style={styles.sectionTitle}>{title}</Text>
+                <TouchableOpacity onPress={handleArrowPress}>
+                    <View style={{
+                        width: 35,
+                        height: 35,
+                        borderRadius: 20,
+                        backgroundColor: '#E6E0E9',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        right: 15
+                    }}
+                    >
+                        <MaterialIcons name="arrow-forward" size={20} color="#000" />
+                    </View>
+                </TouchableOpacity>
+            </View>
+
+            <ImageBackground
+                source={bgImage}
+                style={styles.mainCard}
+                imageStyle={{ borderRadius: 15 }}
+            >
+                <View style={styles.progressBarBackground}>
+
+                    <View style={[
+                        styles.progressBarFill,
+                        { width: `${Math.round(progress * 100)}%` }
+                    ]} />
+                    <Text style={styles.progressText}>{`${Math.round(progress * 100)}%`}</Text>
+                </View>
+                <View style={styles.overlay}>
+                    <Text style={styles.headline}>{headline}</Text>
+                </View>
+            </ImageBackground>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.miniScroll}>
+                {chapters.map((card, index) => (
+                    <MiniCard
+                        key={index}
+                        number={index + 1}
+                        title={card.chapter_name}
+                        onPress={() => onMiniCardPress(card)}
+                    />
+                ))}
+            </ScrollView>
+        </View>
+    );
+};
+
+const styles = StyleSheet.create({
+    container: {
+        padding: 20,
+        // backgroundColor: '#fff',
+    },
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#2D2D2D',
+    },
+    arrow: {
+        fontSize: 24,
+        color: '#555',
+    },
+    mainCard: {
+        height: 120,
+        borderRadius: 15,
+        overflow: 'hidden',
+        marginBottom: 12,
+        justifyContent: 'flex-end',
+    },
+    progressBarBackground: {
+        position: 'absolute',
+        top: 12,
+        left: 10,
+        right: 10,
+        height: 7,
+        borderRadius: 5,
+        backgroundColor: '#eee',
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    progressBarFill: {
+        backgroundColor: '#31C283',
+        height: 7,
+        borderRadius: 5,
+    },
+    progressText: {
+        position: 'absolute',
+        right: 0.00001,
+        // top: -14,
+        backgroundColor: '#31C283',
+        width: 23,
+        height: 23,
+        borderRadius: 14,
+        color: '#fff',
+        fontWeight: '500',
+        fontSize: 10,
+        textAlign: 'center',
+        lineHeight: 22,
+        overflow: 'hidden'
+    },
+
+    overlay: {
+        // backgroundColor: 'rgba(0,0,0,0.3)',
+        padding: 13,
+        borderBottomLeftRadius: 15,
+        borderBottomRightRadius: 15,
+    },
+    headline: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    miniScroll: {
+        // overflow: 'visible'
+    },
+    miniCard: {
+        backgroundColor: '#E6E0E9',
+        borderRadius: 13,
+        padding: 15,
+        // alignItems: 'flex-start',
+        marginRight: 12,
+        // flexDirection: 'row',
+        // justifyContent: 'flex-start',
+        width: 140,
+        // elevation: 6, 
+
+    },
+
+    miniCardCircle: {
+        width: 24,
+        height: 24,
+        borderRadius: 16.5,
+        backgroundColor: '#333066',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 13,
+
+    },
+    miniCardNumber: {
+        color: '#fff',
+        fontWeight: '600',
+        fontSize: 12,
+    },
+    miniCardTitle: {
+        color: '#2D2D2D',
+        fontWeight: '500',
+        fontSize: 13,
+        letterSpacing: 0.7,
+        flexShrink: 1,
+        width: 110,
+        height: 36,
+        // lineHeight: 18,
+    },
+});
+
+export default LearningCard;
