@@ -17,18 +17,23 @@ export function useIntervalData(symbol, interval) {
 
       try {
         const response = await fetch(
-          `${apiUrl}/api/intervals/intervals?symbol=${symbol}&interval=${interval}&limit=100`
+          `${apiUrl}/api/trading/ohlc?symbol=${symbol}&interval=${interval}&limit=100`
         );
-        
+
         if (!response.ok) {
           throw new Error(`Error fetching data: ${response.statusText}`);
         }
-        
+
         const result = await response.json();
-        
+
         if (isMounted) {
-          // setData(result.data);
-          setData(result.data);
+          // StockCard expects { candles: [], ltp, ... }
+          setData({
+            candles: result.data || [],
+            ltp: 0,
+            priceChange: 0,
+            percentChange: 0
+          });
         }
       } catch (err) {
         if (isMounted) {
