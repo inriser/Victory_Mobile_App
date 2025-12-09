@@ -1,0 +1,120 @@
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+
+const MarketTabs = ({ onExchangeChange, onCategoryChange }) => {
+    const [exchange, setExchange] = useState('NSE');
+    const [activeTab, setActiveTab] = useState(null); // No tab selected by default
+
+    const handleExchangeToggle = (exch) => {
+        setExchange(exch);
+        onExchangeChange && onExchangeChange(exch);
+    };
+
+    const handleTabPress = (tab) => {
+        setActiveTab(tab);
+        onCategoryChange && onCategoryChange(tab);
+    };
+
+    const tabs = ['Indices', 'Sectors', 'Industries', 'Themes'];
+
+    return (
+        <View style={styles.container}>
+            {/* Exchange Toggle (NSE | BSE) */}
+            <View style={styles.toggleContainer}>
+                <TouchableOpacity
+                    style={[styles.toggleButton, exchange === 'NSE' && styles.activeToggle]}
+                    onPress={() => handleExchangeToggle('NSE')}
+                >
+                    <Text style={[styles.toggleText, exchange === 'NSE' && styles.activeToggleText]}>NSE</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.toggleButton, exchange === 'BSE' && styles.activeToggle]}
+                    onPress={() => handleExchangeToggle('BSE')}
+                >
+                    <Text style={[styles.toggleText, exchange === 'BSE' && styles.activeToggleText]}>BSE</Text>
+                </TouchableOpacity>
+            </View>
+
+            {/* Tabs ScrollView */}
+            <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.tabsScroll}
+            >
+                {tabs.map((tab) => (
+                    <TouchableOpacity
+                        key={tab}
+                        style={[styles.tabItem, activeTab === tab && styles.activeTabItem]}
+                        onPress={() => handleTabPress(tab)}
+                    >
+                        <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+                            {tab}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+        </View>
+    );
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0'
+    },
+    toggleContainer: {
+        flexDirection: 'row',
+        backgroundColor: '#F5F5F7',
+        borderRadius: 20,
+        padding: 2,
+        marginRight: 16,
+    },
+    toggleButton: {
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 18,
+    },
+    activeToggle: {
+        backgroundColor: '#fff',
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        shadowOffset: { width: 0, height: 1 },
+    },
+    toggleText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#888',
+    },
+    activeToggleText: {
+        color: '#2F0079',
+    },
+    tabsScroll: {
+        alignItems: 'center',
+    },
+    tabItem: {
+        marginRight: 20,
+        paddingVertical: 6,
+    },
+    activeTabItem: {
+        // borderBottomWidth: 2,
+        // borderBottomColor: '#2F0079',
+    },
+    tabText: {
+        fontSize: 14,
+        color: '#666',
+        fontWeight: '500',
+    },
+    activeTabText: {
+        color: '#2F0079',
+        fontWeight: '700',
+    },
+});
+
+export default MarketTabs;

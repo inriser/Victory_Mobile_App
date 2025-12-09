@@ -8,45 +8,68 @@ export const useAllStocks = (limit = 100, sortBy = 'price_desc') => {
   const [offset, setOffset] = useState(0);
   const [error, setError] = useState(null);
 
+  const [allData, setAllData] = useState([]);
+  const [dataFetched, setDataFetched] = useState(false);
+
   const fetchStocks = useCallback(async (currentOffset) => {
-    if (loading) return;
+    // If loading, skip. Exception: if it's a fresh load (offset 0) we might want to proceed if not already loading specific task
+    // But for simplicity, we just check generic loading state
+    if (loading && currentOffset !== 0) return;
 
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(
-        `${apiUrl}/api/symbols?limit=${limit}&offset=${currentOffset}&sort=${sortBy}`
-      );
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
+      let fullList = allData;
 
-      if (data && Array.isArray(data.symbolsWithNames)) {
-        const startIndex = currentOffset;
-        const endIndex = startIndex + limit;
-        const paginatedData = data.symbolsWithNames.slice(startIndex, endIndex);
+      // If we are at offset 0, we want to refresh data from server OR if we haven't fetched yet
+      if (currentOffset === 0 || !dataFetched) {
+        const response = await fetch(`${apiUrl}/api/trading/watchlist`);
 
-        const formattedStocks = paginatedData.map((stock, index) => ({
-          id: `${stock.symbol}-${currentOffset + index}`,
-          symbol: stock.symbol,
-          name: stock.name || stock.symbol,
-          exchange: 'NSE',
-        }));
-
-        if (currentOffset === 0) {
-          setStocks(formattedStocks);
-        } else {
-          setStocks((prev) => [...prev, ...formattedStocks]);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        setHasMore(endIndex < data.symbolsWithNames.length);
-      } else {
-        setHasMore(false);
+        const result = await response.json();
+
+        if (result.success && Array.isArray(result.data)) {
+          fullList = result.data;
+          setAllData(fullList);
+          setDataFetched(true);
+        } else {
+          fullList = [];
+          setAllData([]);
+        }
       }
+
+      // Client-side pagination logic
+      const startIndex = currentOffset;
+      const endIndex = startIndex + limit;
+      const paginatedData = fullList.slice(startIndex, endIndex);
+
+      const formattedStocks = paginatedData.map((stock, index) => ({
+        id: `${stock.symbol}-${startIndex + index}`, // Ensure ID is unique and stable
+        symbol: stock.symbol,
+        name: stock.name || stock.symbol,
+        exchange: 'NSE',
+        ...stock
+      }));
+
+      // If offset is 0, we replace. Else append.
+      if (currentOffset === 0) {
+        setStocks(formattedStocks);
+      } else {
+        // We only append if we are not resetting
+        setStocks((prev) => [...prev, ...formattedStocks]);
+      }
+
+      // Determine if there are more
+      if (endIndex >= fullList.length) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+      }
+
     } catch (err) {
       console.error('Error fetching stocks:', err);
       setError(err.message || 'Failed to fetch stocks');
@@ -54,7 +77,7 @@ export const useAllStocks = (limit = 100, sortBy = 'price_desc') => {
     } finally {
       setLoading(false);
     }
-  }, [limit, loading, sortBy]);
+  }, [limit, sortBy, allData, dataFetched]); // removed 'loading' from dependency to avoid closures issues, handled inside
 
   useEffect(() => {
     fetchStocks(0);
@@ -71,6 +94,7 @@ export const useAllStocks = (limit = 100, sortBy = 'price_desc') => {
   const refresh = useCallback(() => {
     setOffset(0);
     setHasMore(true);
+    setDataFetched(false); // Force re-fetch from API
     fetchStocks(0);
   }, [fetchStocks]);
 
