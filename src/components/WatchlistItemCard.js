@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   logoFallback: {
     width: 34, height: 34,
     borderRadius: 17,
-    backgroundColor: "#2e0b66",
+    backgroundColor: "#210F47",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
@@ -170,19 +170,19 @@ const styles = StyleSheet.create({
   price: { fontSize: 14, fontWeight: "600" },
   leftAction: {
     justifyContent: "center",
-    paddingLeft: 20,
+    paddingLeft: 30,
     width: 90,
     borderRadius: 14,
   },
-  buyText: { fontSize: 15, fontWeight: "700", color: "#21C17A" },
+  buyText: { fontSize: 12, fontWeight: "700", color: "#210F47" },
   rightAction: {
     justifyContent: "center",
-    paddingRight: 20,
+    paddingRight: 30,
     paddingLeft: 20,
     width: 110,
     borderRadius: 14,
   },
-  removeText: { fontSize: 15, fontWeight: "700", color: "#E53935" },
+  removeText: { fontSize: 12, fontWeight: "700", color: "#D32F2F" },
   emptyWrapper: {
     flex: 1,
     justifyContent: "center",

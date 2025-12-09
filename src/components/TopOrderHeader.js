@@ -42,11 +42,11 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 16,
         fontWeight: "600",
-        color: "#210f47", // dark violet text
+        color: "#210F47", // dark violet text
         textAlign: "center",
     },
     iconButton: {
-        backgroundColor: "#210f47", // dark purple circle
+        backgroundColor: "#210F47", // dark purple circle
         width: 36,
         height: 36,
         borderRadius: 18,

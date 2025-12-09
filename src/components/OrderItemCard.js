@@ -27,15 +27,15 @@ const OrderItemCard = ({ name, type, shares, status, price, ltp, onModify, onCan
 
         const s = status.toString().trim().toLowerCase();
 
-        if (["complete", "completed", "executed"].includes(s)) return "#2ECC71"; // Green
-        if (["cancelled", "canceled", "rejected"].includes(s)) return "#E53935"; // Red
+        if (["complete", "completed", "executed"].includes(s)) return "#22C55E"; // Green
+        if (["cancelled", "canceled", "rejected"].includes(s)) return "#D32F2F"; // Red
         if (
             s === "pending" ||
             s === "open" ||
             s === "trigger pending" ||
             s === "put order req received" ||
             s === "put order request was received"
-        ) return "#F6A200"; // Yellow
+        ) return "#FF9F3F"; // Yellow
 
         return "#999";
     };
@@ -51,8 +51,8 @@ const OrderItemCard = ({ name, type, shares, status, price, ltp, onModify, onCan
         if (!type) return "#000";
 
         const t = type.toString().trim().toLowerCase();
-        if (t === "buy") return "#00C853";  // Green
-        if (t === "sell") return "#E53935"; // Red
+        if (t === "buy") return "#22C55E";  // Green
+        if (t === "sell") return "#D32F2F"; // Red
 
         return "#000";
     };
@@ -100,10 +100,6 @@ const OrderItemCard = ({ name, type, shares, status, price, ltp, onModify, onCan
     return (
         <Swipeable
             ref={swipeRef}
-
-            // Disable whole swipe if both modify & cancel are disabled
-            enabled={!(disableModify && disableCancel)}
-
             renderLeftActions={() =>
                 !disableModify ? (
                     <View style={styles.leftAction}>
@@ -111,7 +107,6 @@ const OrderItemCard = ({ name, type, shares, status, price, ltp, onModify, onCan
                     </View>
                 ) : null
             }
-
             renderRightActions={() =>
                 !disableCancel ? (
                     <View style={styles.rightAction}>
@@ -178,24 +173,23 @@ export default OrderItemCard;
 const styles = StyleSheet.create({
     leftAction: {
         justifyContent: "center",
-        paddingLeft: 20,
-        width: 100,
+        paddingLeft: 30,
+        width: 90,
+        borderRadius: 14,
     },
     leftText: {
-        fontSize: 15,
+        fontSize: 12,
         fontWeight: "700",
-        color: "#21C17A",
+        color: "#210F47",
     },
     rightAction: {
         justifyContent: "center",
-        paddingRight: 20,
-        width: 100,
-        alignItems: "flex-end",
+        paddingLeft: 35,
+        width: 110,
+        borderRadius: 14,
     },
     rightText: {
-        fontSize: 15,
-        fontWeight: "700",
-        color: "#E53935",
+        fontSize: 12, fontWeight: "700", color: "#D32F2F"
     },
 
     card: {

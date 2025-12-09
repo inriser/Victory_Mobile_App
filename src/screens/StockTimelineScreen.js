@@ -4,63 +4,86 @@ import {
     Dimensions,
     FlatList,
     SafeAreaView,
-    ScrollView,
-    StatusBar,
     StyleSheet,
-    Text,
-    TouchableOpacity,
     View
 } from 'react-native';
 
+import BottomTabBar from '../components/BottomTabBar';
+import TopHeader from "../components/TopHeader";
 import GainerLoserCard from '../components/GainerLoserCard';
+import CommunitySecondMenuSlider from '../components/CommunitySecondMenuSlider';
+import TopFundamentalSlider from '../components/TopFundamentalSlider';
 import StockCard from '../components/StockCard';
+
 import { useAllStocks } from '../hooks/useAllStocks';
 import { useMarketMovers } from '../hooks/useMarketMovers';
 
 const StockTimelineScreen = () => {
-    const [activeFilter, setActiveFilter] = useState('Latest');
 
-    const filters = ['Latest', 'Watchlists', 'Gainers', 'Losers'];
+    // 🔥 TOP MENU (Timeline / Posts / Messages)
+    const [topTab, setTopTab] = useState("Timeline");
+
+    // 🔥 STOCK MENU (Latest / Watchlists / Gainers / Losers)
+    const [stockTab, setStockTab] = useState("Latest");
 
     const { stocks: allStocks, loading: stocksLoading, hasMore, loadMore } = useAllStocks(5);
     const { data: moversData, loading: moversLoading } = useMarketMovers();
 
+    // Sample Watchlist (later API se aa jayega)
     const watchlistStocks = allStocks.slice(0, 10);
 
+
+    // 🔥 STOCK TAB LOGIC
     const getStockData = () => {
-        switch (activeFilter) {
-            case 'Latest':
+        const defaultStats = { likes: "0", dislikes: "0", comments: "0" };
+
+        switch (stockTab) {
+
+            case "Latest":
                 return allStocks.map(stock => ({
                     ...stock,
-                    analysis: 'Real-time market analysis and insights.',
-                    stats: { likes: '0', dislikes: '0', comments: '0' }
+                    analysis: "Real-time market analysis and insights.",
+                    stats: stock.stats || defaultStats
                 }));
-            case 'Watchlists':
+
+            case "Watchlists":
                 return watchlistStocks.map(stock => ({
                     ...stock,
-                    analysis: 'Stock in your watchlist.',
-                    stats: { likes: '0', dislikes: '0', comments: '0' }
+                    analysis: "Stock in your watchlist.",
+                    stats: stock.stats || defaultStats
                 }));
-            case 'Gainers':
-                return moversData?.gainers || [];
-            case 'Losers':
-                return moversData?.losers || [];
+
+            case "Gainers":
+                return (moversData?.gainers || []).map(item => ({
+                    ...item,
+                    stats: defaultStats   // 🟢 FIX APPLIED HERE
+                }));
+
+            case "Losers":
+                return (moversData?.losers || []).map(item => ({
+                    ...item,
+                    stats: defaultStats   // 🟢 FIX APPLIED HERE
+                }));
+
             default:
                 return allStocks.map(stock => ({
                     ...stock,
-                    analysis: 'Real-time market analysis and insights.',
-                    stats: { likes: '0', dislikes: '0', comments: '0' }
+                    analysis: "Real-time market analysis and insights.",
+                    stats: stock.stats || defaultStats
                 }));
         }
     };
 
+
     const stockData = getStockData();
 
+
+    // 🔥 Vertical Stock Pagination Layout
     const { height: SCREEN_HEIGHT } = Dimensions.get('window');
     const ITEM_HEIGHT = SCREEN_HEIGHT - 60;
 
     const renderStockItem = ({ item }) => (
-        <View style={{ height: ITEM_HEIGHT, justifyContent: 'flex-start' }}>
+        <View style={{ height: ITEM_HEIGHT }}>
             <StockCard stock={item} />
         </View>
     );
@@ -75,127 +98,101 @@ const StockTimelineScreen = () => {
         />
     );
 
+
     const handleLoadMore = () => {
-        if ((activeFilter === 'Latest' || activeFilter === 'Watchlists') && !stocksLoading && hasMore) {
+        if ((stockTab === 'Latest' || stockTab === 'Watchlists') && !stocksLoading && hasMore) {
             loadMore();
         }
     };
 
+
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#F5F5F7" />
+        <>
+            <SafeAreaView style={styles.container}>
+                <TopHeader />
 
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={true}
-                style={styles.filterContainer}
-                contentContainerStyle={styles.filterContent}
-            >
-                {filters.map((filter) => (
-                    <TouchableOpacity
-                        key={filter}
-                        style={[
-                            styles.filterButton,
-                            activeFilter === filter && styles.activeFilterButton,
-                        ]}
-                        onPress={() => setActiveFilter(filter)}
-                    >
-                        <Text
-                            style={[
-                                styles.filterText,
-                                activeFilter === filter && styles.activeFilterText,
-                            ]}
-                        >
-                            {filter}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
+                {/* 🔥 TOP TWO MENUS */}
+                <View style={styles.topSliders}>
 
-            <View style={{ flex: 50 }}>
-                {(activeFilter === 'Gainers' || activeFilter === 'Losers') ? (
-                    moversLoading ? (
-                        <ActivityIndicator size="large" color="#2D1B69" style={{ marginTop: 20 }} />
+                    {/* TOP: Timeline / Posts / Messages */}
+                    <CommunitySecondMenuSlider
+                        activeFilter={topTab}
+                        onTabChange={(t) => setTopTab(t)}
+                    />
+
+                    {/* SECOND: Latest / Watchlists / Gainers / Losers */}
+                    <TopFundamentalSlider
+                        selectedCategory={stockTab}
+                        onTabChange={(id) => setStockTab(id)}
+                    />
+
+                </View>
+
+
+                {/* 🔥 MAIN CONTENT AREA */}
+                <View style={{ flex: 50, }}>
+
+                    {(stockTab === 'Gainers' || stockTab === 'Losers') ? (
+                        moversLoading ? (
+                            <ActivityIndicator size="large" color="#210F47" style={{ marginTop: 20 }} />
+                        ) : (
+                            <FlatList
+                                data={stockData}
+                                renderItem={renderGainerLoserItem}
+                                keyExtractor={(item) => item.id || item.symbol}
+                                contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20, marginTop: 10, }}
+                                showsVerticalScrollIndicator={true}
+                            />
+                        )
                     ) : (
                         <FlatList
                             data={stockData}
-                            renderItem={renderGainerLoserItem}
-                            keyExtractor={(item) => item.id || item.symbol}
-                            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
-                            showsVerticalScrollIndicator={true}
+                            renderItem={renderStockItem}
+                            keyExtractor={(item) => item.id}
+                            pagingEnabled
+                            snapToAlignment="start"
+                            decelerationRate="fast"
+                            snapToInterval={ITEM_HEIGHT}
+                            getItemLayout={(data, index) => ({
+                                length: ITEM_HEIGHT,
+                                offset: ITEM_HEIGHT * index,
+                                index,
+                            })}
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ paddingHorizontal: 0 }}
+                            onEndReached={handleLoadMore}
+                            onEndReachedThreshold={0.5}
+                            ListFooterComponent={
+                                stocksLoading ? (
+                                    <ActivityIndicator size="small" color="#210F47" style={{ padding: 20 }} />
+                                ) : null
+                            }
                         />
-                    )
-                ) : (
-                    <FlatList
-                        data={stockData}
-                        renderItem={renderStockItem}
-                        keyExtractor={(item) => item.id}
-                        pagingEnabled
-                        snapToAlignment="start"
-                        decelerationRate="fast"
-                        snapToInterval={ITEM_HEIGHT}
-                        getItemLayout={(data, index) => ({
-                            length: ITEM_HEIGHT,
-                            offset: ITEM_HEIGHT * index,
-                            index,
-                        })}
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={{ paddingHorizontal: 0 }}
-                        onEndReached={handleLoadMore}
-                        onEndReachedThreshold={0.5}
-                        ListFooterComponent={
-                            stocksLoading ? (
-                                <ActivityIndicator size="small" color="#2D1B69" style={{ padding: 20 }} />
-                            ) : null
-                        }
-                    />
-                )}
-            </View>
-        </SafeAreaView>
+                    )}
+
+                </View>
+            </SafeAreaView>
+
+            <BottomTabBar />
+        </>
     );
 };
 
+
 const styles = StyleSheet.create({
+    topSliders: {
+        backgroundColor: "#fff",
+        elevation: 10,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+        marginTop: -3,
+        paddingTop: 3
+    },
     container: {
         flex: 1,
-        backgroundColor: '#F5F5F7',
-    },
-    filterContainer: {
-        flexWrap: 'wrap',
-        paddingHorizontal: 2,
-        marginBottom: 0,
-        marginTop: 7,
-    },
-    filterContent: {
-        gap: 0,
-    },
-    filterButton: {
-        height: 40,
-        minWidth: 70,
-        paddingHorizontal: 20,
-        marginHorizontal: 5,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#E8E8EA',
-        borderRadius: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 3,
-    },
-    activeFilterButton: {
-        backgroundColor: '#2D1B69',
-        shadowOpacity: 0.25,
-        elevation: 5,
-    },
-    filterText: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#666',
-    },
-    activeFilterText: {
-        color: '#FFF',
+        backgroundColor: '#fff',
     }
 });
 

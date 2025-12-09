@@ -56,14 +56,13 @@ const styles = StyleSheet.create({
     scrollContainer: {
         flexDirection: "row",
         alignItems: "center",
-        paddingHorizontal: 10,
         paddingVertical: 6,
     },
     tabItem: {
         backgroundColor: "#fff",
         borderRadius: 40,
-        paddingVertical: 6,
-        paddingHorizontal: 18,
+       paddingVertical: 5,
+        paddingHorizontal: 16,
         marginRight: 10,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
@@ -72,13 +71,14 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     tabText: {
-        color: "#210f47",
+        color: "#210F47",
         fontSize: 12,
+        fontFamily: "Poppins-Medium",
         fontWeight: "500",
     },
     activeTab: {
-        backgroundColor: "#210f47",
-        shadowColor: "#210f47",
+        backgroundColor: "#210F47",
+        shadowColor: "#210F47",
         shadowOpacity: 0.2,
     },
     activeTabText: {

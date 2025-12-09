@@ -19,6 +19,7 @@ import { apiUrl } from "../utils/apiUrl";
 const API = `${apiUrl}/api/wishlistcontrol`;
 
 const TopWatchlistMenu = ({ onWatchlistChange }) => {
+  const SHOW_KEY = "watchlist_show_names";
   const [active, setActive] = useState(1);
   const [showPopup, setShowPopup] = useState(false);
   const [lists, setLists] = useState([]);
@@ -31,7 +32,15 @@ const TopWatchlistMenu = ({ onWatchlistChange }) => {
   const [showContent, setShowContent] = useState(false);
   const slideAnim = useRef(new Animated.Value(0)).current;
   const deleteScale = useRef(new Animated.Value(0.5)).current;
-
+  useEffect(() => {
+    const loadShowState = async () => {
+      const saved = await AsyncStorage.getItem(SHOW_KEY);
+      if (saved === "true") {
+        setShowContent(true);
+      }
+    };
+    loadShowState();
+  }, []);
   useEffect(() => {
     loadUserAndFetch();
   }, []);
@@ -203,7 +212,7 @@ const TopWatchlistMenu = ({ onWatchlistChange }) => {
 
             {loading && (
               <View style={{ padding: 20, alignItems: "center" }}>
-                <ActivityIndicator size="small" color="#2e0b66" />
+                <ActivityIndicator size="small" color="#210F47" />
               </View>
             )}
 
@@ -240,15 +249,19 @@ const TopWatchlistMenu = ({ onWatchlistChange }) => {
             {!inputVisible && !loading && (
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: 'space-around' }}>
                 <TouchableOpacity
-                  onPress={() => setShowContent(prev => !prev)}
+                  onPress={async () => {
+                    const newValue = !showContent;
+                    setShowContent(newValue);
+                    await AsyncStorage.setItem(SHOW_KEY, newValue ? "true" : "false");
+                  }}
+
                   style={{ marginTop: 16 }}
                 >
                   <Ionicons
                     name={showContent ? "eye-outline" : "eye-off-outline"}
                     size={19}
                     color="#ffffff"
-                    style={{ backgroundColor: '#2e0b66', borderRadius: 50, padding: 10 }}
-
+                    style={{ backgroundColor: '#210F47', borderRadius: 50, padding: 10 }}
                   />
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -412,7 +425,7 @@ const styles = StyleSheet.create({
   addMoreBtn: {
     marginTop: 16,
     alignSelf: "center",
-    backgroundColor: "#2e0b66",
+    backgroundColor: "#210F47",
     paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 20,
@@ -439,7 +452,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 20,
-    backgroundColor: "#2e0b66",
+    backgroundColor: "#210F47",
   },
   deleteBox: {
     width: 260,
@@ -466,7 +479,7 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingHorizontal: 25,
     borderRadius: 8,
-    backgroundColor: "red",
+    backgroundColor: "#D32F2F",
   },
   noText: { color: "#333", fontWeight: "600" },
   yesText: { color: "#fff", fontWeight: "600" },

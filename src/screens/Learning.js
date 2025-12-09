@@ -11,7 +11,6 @@ import TopFundamentalSlider from '../components/TopFundamentalSlider';
 import axiosInstance from "../api/axios";
 import { apiUrl } from '../utils/apiUrl';
 
-
 const Learning = () => {
     const route = useRoute();
     const navigation = useNavigation();
@@ -45,21 +44,11 @@ const Learning = () => {
             }
         }
 
-        // Only set default if selectedCategory is null AND no route param
-        if (!selectedCategory) {
-            setSelectedCategory(categories[0]);
-        }
+        // if (!selectedCategory) {
+        //     setSelectedCategory(categories[0]);
+        // }
 
     }, [route.params?.selectedCategoryId, categories]);
-
-
-    // Fetch modules whenever selected category changes
-    // useEffect(() => {
-    //     if (selectedCategory?.id) {
-    //         setLoading(true);
-    //         fetchModules(selectedCategory.id);
-    //     }
-    // }, [selectedCategory]);
 
     useFocusEffect(
         React.useCallback(() => {
@@ -81,6 +70,11 @@ const Learning = () => {
             setLoading(false);
         }
     };
+    useEffect(() => {
+        if (categories.length > 0 && !selectedCategory) {
+            setSelectedCategory(categories[0]); // auto select 1st tab
+        }
+    }, [categories]);
 
     return (
         <>
@@ -122,20 +116,7 @@ const Learning = () => {
                         })
                     )}
                 </ScrollView>
-
             </SafeAreaView>
-            {/* <ScrollView style={styles.container}>
-                <LearningCard
-                    title="Investing for Beginners"
-                    bgImage={learning_image}
-                    progress={0.52}
-                    headline="Understand how the stock market works, its participants, and why prices move."
-                    miniCards={miniCards}
-                    onMiniCardPress={card => {
-                        navigation.navigate('LearningDetail', { card });
-                    }}
-                />
-            </ScrollView> */}
             <BottomTabBar />
         </>
     );

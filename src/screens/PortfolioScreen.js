@@ -123,7 +123,6 @@ const PorfolioScreen = () => {
                         activeTab={selectedTab}
                         onTabChange={(tab) => setSelectedTab(tab)}
                     />
-
                 </View> */}
 
                 {/* Sort + Filter Bar */}
@@ -131,9 +130,7 @@ const PorfolioScreen = () => {
                     <Text style={styles.orderTitle}>
                         Equity Holdings
                     </Text>
-
                     <View style={styles.row}>
-
                         {/* SORT BUTTON */}
                         <TouchableOpacity style={styles.iconRow} onPress={sortOrders}>
                             {/* Icon Logic */}
@@ -216,12 +213,24 @@ const PorfolioScreen = () => {
                                 profit={(Number(item.ltp).toFixed(2) * item.realisedquantity).toFixed(2)}
 
                                 profitPercent={Number(
-                                    (Number(item.ltp || 0) - Number(item.close || 0)) *
-                                    Number(item.realisedquantity || 0)
+                                    (
+                                        (Number(item.ltp || 0) * Number(item.realisedquantity || 0)) -
+                                        (Number(item.averageprice || 0) * Number(item.realisedquantity || 0))
+                                    ) /
+                                    (Number(item.averageprice || 0) * Number(item.realisedquantity || 0)) * 100
                                 ).toFixed(2)}
 
-                                todayPercent={(((Number(item.ltp || 0) * Number(item.realisedquantity || 0)) /
-                                     (Number(item.close || 0) * Number(item.realisedquantity || 0))) - 1).toFixed(2)}
+                                today={(
+                                    (Number(item.ltp || 0) - Number(item.close || 0)) *
+                                    Number(item.realisedquantity || 0)
+                                )}
+
+                                todayPercent={(((
+                                    (Number(item.ltp || 0) - Number(item.close || 0)) *
+                                    Number(item.realisedquantity || 0)
+                                ) / Number(
+                                    Number((item.averageprice || 0) * (item.realisedquantity || 0)).toFixed(2)
+                                )) * 100).toFixed(2)}
                             />
                         ))}
                     </ScrollView>
@@ -309,7 +318,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#eee",
         elevation: 6,
-        shadowColor: "#210f47",
+        shadowColor: "#210F47",
         shadowOpacity: 0.15,
         shadowRadius: 5,
         zIndex: 1000,

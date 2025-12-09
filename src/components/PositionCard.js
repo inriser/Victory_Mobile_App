@@ -15,90 +15,84 @@ const PositionCard = ({
     unrealised,
     realised
 }) => {
-    const pnlColor = Number(pnl) < 0 ? "red" : "green";
+    const pnlColor = Number(pnl) < 0 ? "red" : "#22C55E";
 
     return (
         <View style={styles.card}>
 
             {/* HEADER ROW */}
             <View style={styles.headerRow}>
-                <Text style={styles.symbol}>{tradingsymbol}</Text>
+                <View style={styles.gridItemTop}>
+                    <Text style={styles.symbol}>{tradingsymbol}&nbsp;
+                        <Text style={styles.label}>(Net Qty : <Text style={styles.topValue}>{Number(netqty).toFixed(2)}</Text>)</Text>
+                    </Text></View>
+                <Text style={styles.label}>PNL : <Text style={[styles.value, { color: pnlColor }]}>
+                    {Number(pnl).toFixed(2)}
+                </Text></Text>
             </View>
-
-            {/* 3-COL GRID ROWS */}
-
             {/* Row 1 */}
             <View style={styles.gridRow}>
                 <View style={styles.gridItem}>
                     <Text style={styles.label}>Exchange</Text>
                     <Text style={styles.value}>{exchange}</Text>
                 </View>
-
                 <View style={styles.gridItem}>
                     <Text style={styles.label}>Product</Text>
                     <Text style={styles.value}>{producttype}</Text>
                 </View>
-
-                <View style={styles.gridItem}>
-                    <Text style={styles.label}>Buy Qty</Text>
-                    <Text style={styles.value}>{buyqty}</Text>
-                </View>
+                <View style={styles.gridItem}></View>
             </View>
 
             {/* Row 2 */}
             <View style={styles.gridRow}>
-
                 <View style={styles.gridItem}>
-                    <Text style={styles.label}>Sell Qty</Text>
-                    <Text style={styles.value}>{sellqty}</Text>
-                </View>
-
-                <View style={styles.gridItem}>
-                    <Text style={styles.label}>Net Qty</Text>
-                    <Text style={styles.value}>{netqty}</Text>
+                    <Text style={styles.label}>Buy Qty</Text>
+                    <Text style={styles.value}>{Number(buyqty).toFixed(2)}</Text>
                 </View>
                 <View style={styles.gridItem}>
                     <Text style={styles.label}>Buy Avg. Price</Text>
-                    <Text style={styles.value}>{buyavgprice}</Text>
+                    <Text style={styles.value}>{Number(buyavgprice).toFixed(2)}</Text>
+                </View>
+                <View style={styles.gridItem}>
+                    <Text style={styles.label}>Buy Value</Text>
+                    <Text style={styles.value}>{(Number(buyqty) * Number(buyavgprice) || 0).toFixed(2)}</Text>
                 </View>
             </View>
 
             {/* Row 3 */}
             <View style={styles.gridRow}>
                 <View style={styles.gridItem}>
+                    <Text style={styles.label}>Sell Qty</Text>
+                    <Text style={styles.value}>{Number(sellqty).toFixed(2)}</Text>
+                </View>
+                <View style={styles.gridItem}>
                     <Text style={styles.label}>Sell Avg. Price</Text>
-                    <Text style={styles.value}>{sellavgprice}</Text>
-                </View>
-
-
-                <View style={styles.gridItem}>
-                    <Text style={styles.label}>LTP</Text>
-                    <Text style={styles.value}>{ltp}</Text>
+                    <Text style={styles.value}>{Number(sellavgprice).toFixed(2)}</Text>
                 </View>
                 <View style={styles.gridItem}>
-                    <Text style={styles.label}>PNL</Text>
-                    <Text style={[styles.value, { color: pnlColor }]}>
-                        {pnl}
-                    </Text>
+                    <Text style={styles.label}>Sell Value</Text>
+                    <Text style={styles.value}>{(Number(sellqty) * Number(sellavgprice) || 0).toFixed(2)}</Text>
                 </View>
             </View>
             <View style={styles.gridRow}>
                 <View style={styles.gridItem}>
+                    <Text style={styles.label}>LTP</Text>
+                    <Text style={styles.value}>{Number(ltp).toFixed(2)}</Text>
+                </View>
+                <View style={styles.gridItem}>
                     <Text style={styles.label}>Unrealised</Text>
-                    <Text style={styles.value}>{unrealised}</Text>
+                    <Text style={styles.value}>{Number(unrealised).toFixed(2)}</Text>
                 </View>
                 <View style={styles.gridItem}>
                     <Text style={styles.label}>Realised</Text>
-                    <Text style={styles.value}>{realised}</Text>
+                    <Text style={styles.value}>{Number(realised).toFixed(2)}</Text>
                 </View>
             </View>
-
         </View>
     );
 };
 
 export default PositionCard;
-
 
 const styles = StyleSheet.create({
     card: {
@@ -152,6 +146,13 @@ const styles = StyleSheet.create({
     gridItem: {
         width: "25%",
     },
+    gridItemTop: {
+        width: "80%",
+    },
+
+    gridItemTop2: {
+        width: "20%",
+    },
 
     gridItem2: {
         width: "50%",
@@ -161,7 +162,12 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: "#777",
     },
-
+    topValue: {
+        fontSize: 11,
+        fontWeight: "600",
+        color: "#000",
+        marginTop: 2,
+    },
     value: {
         fontSize: 13,
         fontWeight: "600",

@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
         borderRadius: 17,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#210f47",
+        backgroundColor: "#210F47",
         shadowColor: "#000",
         shadowOpacity: 0.05,
         shadowOffset: { width: 0, height: 1 },
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
         paddingVertical: 0, // ✅ ensures vertical centering of placeholder text
     },
     circleButton: {
-        backgroundColor: "#210f47", // ✅ deep purple
+        backgroundColor: "#210F47", // ✅ deep purple
         width: 34,
         height: 34,
         borderRadius: 17,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
         right: 8,
         width: 8,
         height: 8,
-        backgroundColor: "#ff3b30", // ✅ red notification dot
+        backgroundColor: "#D32F2F", // ✅ red notification dot
         borderRadius: 4,
     },
     modalOverlay: {

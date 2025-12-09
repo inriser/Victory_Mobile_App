@@ -19,6 +19,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { apiUrl } from '../utils/apiUrl';
 import { useAuth } from '../context/AuthContext';
+import rupeeIcon from "../../assets/dropdownrupees.png";
+import watchlistIcon from "../../assets/dropdownwatchlist.png";
 
 const WISHLIST_API = `${apiUrl}/api/wishlistcontrol`;
 const TopHeader = ({ onWatchlistAdded }) => {
@@ -259,7 +261,7 @@ const TopHeader = ({ onWatchlistAdded }) => {
         </View>
 
         {/* Suggestions dropdown */}
-        {filtered.length > 0 && (
+        {/* {filtered.length > 0 && (
           <View style={styles.suggestionBox}>
             <ScrollView style={{ maxHeight: 180 }}>
               {filtered.map((item) => (
@@ -276,7 +278,42 @@ const TopHeader = ({ onWatchlistAdded }) => {
               ))}
             </ScrollView>
           </View>
+        )} */}
+        {filtered.length > 0 && (
+          <View style={styles.dropdownWrapper}>
+            <ScrollView style={styles.dropdownScroll}>
+              {filtered.map((item) => (
+                <TouchableOpacity
+                  key={item.script_id}
+                  style={styles.dropdownRow}
+                  onPress={() => handleSuggestionSelect(item)}
+                >
+                  {/* LEFT: Script Name */}
+                  <Text style={styles.dropdownText} numberOfLines={1}>
+                    {item.script_name}
+                    {item.script_id ? ` (${item.script_id})` : ""}
+                  </Text>
+
+                  {/* RIGHT: TWO ICONS */}
+                  <View style={styles.rightIcons}>
+                    <Image
+                      source={watchlistIcon}
+                      style={styles.iconImage}
+                      resizeMode="contain"
+                    />
+
+                    <Image
+                      source={rupeeIcon}
+                      style={[styles.iconImage, { marginLeft: 18 }]}
+                      resizeMode="contain"
+                    />
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
         )}
+
 
         {/* Notification Button */}
         <TouchableOpacity style={styles.circleButton}>
@@ -337,7 +374,7 @@ const TopHeader = ({ onWatchlistAdded }) => {
 
             {loadingWatchlists ? (
               <View style={{ padding: 20, alignItems: "center" }}>
-                <ActivityIndicator size="small" color="#2e0b66" />
+                <ActivityIndicator size="small" color="#210F47" />
               </View>
             ) : watchlists.length > 0 ? (
               <ScrollView style={{ maxHeight: 300 }}>
@@ -348,7 +385,7 @@ const TopHeader = ({ onWatchlistAdded }) => {
                       styles.watchlistRow,
                       addingToWishlist[wl.id] && { opacity: 0.6 }
                     ]}
-                    disabled={addingToWishlist[wl.id]} // 👈 disable on tap
+                    disabled={addingToWishlist[wl.id]}
                     onPress={() => handleAddToWatchlist(wl)}
                   >
                     <Text style={styles.watchlistRowText}>
@@ -356,7 +393,7 @@ const TopHeader = ({ onWatchlistAdded }) => {
                       {addingToWishlist[wl.id] && (
                         <ActivityIndicator
                           size="small"
-                          color="#2e0b66"
+                          color="#210F47"
                           style={{ marginLeft: 8 }}
                         />
                       )}
@@ -440,7 +477,7 @@ const styles = StyleSheet.create({
     color: "#444",
   },
   circleButton: {
-    backgroundColor: "#210f47",
+    backgroundColor: "#210F47",
     width: 34,
     height: 34,
     borderRadius: 17,
@@ -519,6 +556,43 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#333",
   },
+  dropdownWrapper: {
+    position: "absolute",
+    top: 52,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderTopWidth: 0,
+    borderBottomWidth: 1,
+    borderColor: "#E5E5E5",
+    width: "100vw",
+    zIndex: 99999,
+  },
+  dropdownScroll: {
+    maxHeight: 300,
+  },
+  dropdownRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEE",
+  },
+  dropdownText: {
+    fontSize: 15,
+    color: "#333",
+    flex: 1,
+  },
+  rightIcons: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  iconImage: {
+    width: 22,
+    height: 22,
+},
 });
 
 export default TopHeader;

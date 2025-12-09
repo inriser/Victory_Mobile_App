@@ -51,8 +51,6 @@ const TradeScreen = () => {
         fetchTradeCategories();
     }, []);
 
-
-
     useEffect(() => {
         if (!tradeCategories.length) return;
 
@@ -251,7 +249,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#eee",
         elevation: 6,
-        shadowColor: "#210f47",
+        shadowColor: "#210F47",
         shadowOpacity: 0.15,
         shadowRadius: 5,
         zIndex: 1000,

@@ -17,7 +17,7 @@ const TradeExecutedCard = ({
     const getTypeColor = () => {
         if (!transactiontype) return "#000";
         const t = transactiontype.toLowerCase();
-        if (t === "buy") return "#00C853";
+        if (t === "buy") return "#22C55E";
         if (t === "sell") return "#E53935";
         return "#000";
     };

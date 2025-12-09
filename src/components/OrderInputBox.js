@@ -38,7 +38,7 @@ const OrderInputBox = ({
 
                 {value !== "" && (
                     isValid ? (
-                        <Ionicons name="checkmark-circle" size={20} color="green" />
+                        <Ionicons name="checkmark-circle" size={20} color="#22C55E" />
                     ) : (
                         <Ionicons name="alert-circle" size={20} color="#ffcc00" />
                     )
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     },
 
     labelText: {
-        color: "#210f47",
+        color: "#210F47",
         fontSize: 14,
         fontWeight: "600",
     },

@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     numCircle: {
         width: 33, height: 33,
         borderRadius: 17,
-        backgroundColor: '#333066',
+        backgroundColor: '#210F47',
         alignItems: 'center', justifyContent: 'center',
         marginRight: 11,
     },

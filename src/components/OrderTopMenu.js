@@ -100,14 +100,14 @@ const styles = StyleSheet.create({
   },
 
   activeTab: {
-    backgroundColor: "#210f47",
+    backgroundColor: "#210F47",
     shadowOpacity: 0.25,
     shadowRadius: 3,
     elevation: 3,
   },
 
   tabTextDark: {
-    color: "#210f47",
+    color: "#210F47",
     fontSize: 13,
     fontWeight: "500",
   },

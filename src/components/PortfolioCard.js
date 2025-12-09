@@ -6,22 +6,30 @@ const PortfolioCard = ({
     shares,
     invested,
     price,
-
     currentValue,
     profit,
     profitPercent,
+    today,
     todayPercent
 }) => {
 
-    const profitColor = profit >= 0 ? "#1BAE6A" : "#E84242";
-    const todayColor = todayPercent >= 0 ? "#1BAE6A" : "#E84242";
+    // Safely convert all values to number
+    const toNum = (val) => {
+        const num = Number(val);
+        return isNaN(num) ? 0 : num;
+    };
 
-    // NEW: Color for Current Value
-    const currentValueColor = currentValue >= 0 ? "#1BAE6A" : "#E84242";
+    // Colors based on + / - values
+    const profitColor = toNum(profit) >= 0 ? "#1BAE6A" : "#E84242";
+    const profitPercentColor = toNum(profitPercent) >= 0 ? "#1BAE6A" : "#E84242";
+    const todayColor = toNum(today) >= 0 ? "#1BAE6A" : "#E84242";
+    const todayPercentColor = toNum(todayPercent) >= 0 ? "#1BAE6A" : "#E84242";
+    const currentValueColor = toNum(currentValue) >= 0 ? "#1BAE6A" : "#E84242";
 
+    // Number formatter
     const formatNumber = (num) => {
-        if (num === null || num === undefined) return "0";
-        return new Intl.NumberFormat("en-IN").format(Math.abs(num));
+        const n = toNum(num);
+        return new Intl.NumberFormat("en-IN").format(Math.abs(n));
     };
 
     return (
@@ -31,30 +39,39 @@ const PortfolioCard = ({
                 {/* LEFT SIDE */}
                 <View style={{ flex: 1.6 }}>
                     <Text style={styles.name}>
-                        {name} <Text style={styles.sharesText}>(Share: {formatNumber(shares)})</Text>
+                        {name}{" "}
+                        <Text style={styles.sharesText}>
+                            (Share : {formatNumber(shares)})
+                        </Text>
                     </Text>
 
-                    <Text style={styles.label}>Invested: ₹{formatNumber(invested)}</Text>
-                    <Text style={styles.label}>Price: ₹{formatNumber(price)}</Text>
+                    <Text style={styles.label}>Invested : ₹{formatNumber(invested)}</Text>
+                    <Text style={styles.label}>Avg. Price : ₹{formatNumber(price)}</Text>
                 </View>
 
                 {/* RIGHT SIDE */}
                 <View style={styles.rightBlock}>
-
-                    <Text style={[styles.today, { color: currentValueColor }]}>
-                        <Text style={styles.rightLabel}>Current Value:</Text> ₹{formatNumber(currentValue)}
-                    </Text>
-
                     <Text style={[styles.profit, { color: profitColor }]}>
                         ₹{formatNumber(profit)}
-                        <Text style={styles.percentText}> ({formatNumber(profitPercent)}%)</Text>
+                        <Text style={[styles.percentText, { color: profitPercentColor }]}>
+                            {" "}({formatNumber(profitPercent)}%)
+                        </Text>
                     </Text>
 
-
-                    <Text style={[styles.today, { color: todayColor }]}>
-                        <Text style={styles.rightLabel}>Today:</Text> {formatNumber(todayPercent)}%
+                    <Text style={[styles.today, { color: currentValueColor }]}>
+                        <Text style={styles.rightLabel}>LTP :</Text> ₹{formatNumber(currentValue)}
                     </Text>
 
+                    <Text style={styles.today}>
+                        <Text style={styles.rightLabel}>Today : </Text>
+                        <Text style={{ color: todayColor }}>
+                            ₹{formatNumber(today)}
+                        </Text>
+                        {" "}
+                        <Text style={{ color: todayPercentColor }}>
+                            ({formatNumber(todayPercent)}%)
+                        </Text>
+                    </Text>
                 </View>
             </View>
         </View>
@@ -83,8 +100,9 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
     },
+
     percentText: {
-        fontSize: 10,       // smaller size
+        fontSize: 10,
         fontWeight: "500",
     },
 
@@ -110,23 +128,23 @@ const styles = StyleSheet.create({
     rightBlock: {
         flex: 1,
         alignItems: "flex-end",
-        marginTop: 7,
+        marginTop: 3,
     },
 
     rightLabel: {
-        fontSize: 10,
-        color: "#999",
+        fontSize: 12,
+        color: "#666",
         marginBottom: 2,
     },
 
     profit: {
         fontSize: 14,
         fontWeight: "700",
-        marginBottom: 4,
+        marginBottom: 2,
     },
 
     today: {
         fontSize: 10,
-        fontWeight: "600",
+        textAlign:"right"
     },
 });

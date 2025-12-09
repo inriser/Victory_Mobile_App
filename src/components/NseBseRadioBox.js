@@ -25,7 +25,7 @@ const NseBseRadioBox = ({
               selected === "NSE" ? "radio-button-on" : "radio-button-off"
             }
             size={16}
-            color="#210f47"
+            color="#210F47"
           />
           <Text
             style={[
@@ -53,7 +53,7 @@ const NseBseRadioBox = ({
               selected === "BSE" ? "radio-button-on" : "radio-button-off"
             }
             size={16}
-            color="#210f47"
+            color="#210F47"
           />
           <Text
             style={[
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   text: {
-    color: "#210f47",
+    color: "#210F47",
     fontWeight: "500",
     fontSize: 13,
     marginLeft: 6,

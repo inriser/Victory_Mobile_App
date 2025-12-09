@@ -182,11 +182,11 @@ export default function DematScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   scroll: { padding: 24, alignItems: 'center' },
-  image: { width: '100%', height: 250 },
+  image: { width: '100%', height: 250, marginTop: 100 },
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#2F0079',
+    color: '#210F47',
     marginVertical: 10,
     alignSelf: 'flex-start',
   },
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   nextBtn: {
-    backgroundColor: '#2F0079',
+    backgroundColor: '#210F47',
     borderRadius: 25,
     paddingVertical: 10,
     paddingHorizontal: 25,

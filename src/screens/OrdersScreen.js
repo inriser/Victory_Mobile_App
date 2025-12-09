@@ -23,6 +23,7 @@ const filterOptions = [
 ];
 
 const OrdersScreen = () => {
+    const [sortOpen, setSortOpen] = useState(false);
     const route = useRoute();
     const navigation = useNavigation();
     const [loading, setLoading] = useState(false);
@@ -33,6 +34,18 @@ const OrdersScreen = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState("All");
     const { authToken } = useAuth();
+    const normalizeStatus = (status = "") => status.toString().trim().toLowerCase();
+    const filterMap = {
+        1: ["All", "Equity", "F&O"],  // Trades
+        2: ["All", "Executed", "Cancelled", "Rejected", "Pending"], // Orders
+        3: ["All", "Equity", "F&O"], // Positions
+    };
+    const sortMap = {
+        1: ["A-Z", "Z-A", "High-Low", "Low-High"], // Trades
+        2: ["A-Z", "Z-A", "High-Low", "Low-High"], // Orders
+        3: ["A-Z", "Z-A", "High-Low", "Low-High"], // Positions
+    };
+
     useEffect(() => {
         if (route.params?.defaultTab) {
             setSelectedTab(route.params.defaultTab);
@@ -79,23 +92,85 @@ const OrdersScreen = () => {
         fetchOrders();
     }, [selectedTab]);
 
-    const sortOrders = () => {
-        let newOrders = [...orders];
+    const sortOrders = (sortType) => {
+        let sorted = [...orders];
 
-        if (sortOrder === null) {
-            newOrders.sort((a, b) => Number(b.price) - Number(a.price)); // DESC
-            setSortOrder("desc");
-        }
-        else if (sortOrder === "desc") {
-            newOrders.sort((a, b) => Number(a.price) - Number(b.price)); // ASC
-            setSortOrder("asc");
-        }
-        else {
-            newOrders = [...originalOrders]; // RESET
-            setSortOrder(null);
+        // ----- TRADES (TAB 1) -----
+        if (selectedTab === 1) {
+            if (sortType === "A-Z") {
+                sorted.sort((a, b) =>
+                    (a.tradingsymbol || "").localeCompare(b.tradingsymbol || "")
+                );
+            }
+            else if (sortType === "Z-A") {
+                sorted.sort((a, b) =>
+                    (b.tradingsymbol || "").localeCompare(a.tradingsymbol || "")
+                );
+            }
+            else if (sortType === "High-Low") {
+                sorted.sort((a, b) =>
+                    Number(b.tradevalue || 0) - Number(a.tradevalue || 0)
+                );
+            }
+            else if (sortType === "Low-High") {
+                sorted.sort((a, b) =>
+                    Number(a.tradevalue || 0) - Number(b.tradevalue || 0)
+                );
+            }
+
+            setOrders(sorted);
+            return;
         }
 
-        setOrders(newOrders);
+        // ----- ORDERS (TAB 2) -----
+        if (selectedTab === 2) {
+            if (sortType === "A-Z") {
+                sorted.sort((a, b) =>
+                    (a.trading_symbol || "").localeCompare(b.trading_symbol || "")
+                );
+            }
+            else if (sortType === "Z-A") {
+                sorted.sort((a, b) =>
+                    (b.trading_symbol || "").localeCompare(a.trading_symbol || "")
+                );
+            }
+            else if (sortType === "High-Low") {
+                sorted.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
+            }
+            else if (sortType === "Low-High") {
+                sorted.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
+            }
+
+            setOrders(sorted);
+            return;
+        }
+
+        // ----- POSITIONS (TAB 3) -----
+        if (selectedTab === 3) {
+            const calcValue = (item) => {
+                const buyValue = Number(item.buyqty || 0) * Number(item.buyavgprice || 0);
+                const sellValue = Number(item.sellqty || 0) * Number(item.sellavgprice || 0);
+                return buyValue - sellValue;
+            };
+            if (sortType === "A-Z") {
+                sorted.sort((a, b) =>
+                    (a.tradingsymbol || "").localeCompare(b.tradingsymbol || "")
+                );
+            }
+            else if (sortType === "Z-A") {
+                sorted.sort((a, b) =>
+                    (b.tradingsymbol || "").localeCompare(a.tradingsymbol || "")
+                );
+            }
+            else if (sortType === "High-Low") {
+                sorted.sort((a, b) => calcValue(b) - calcValue(a));
+            }
+            else if (sortType === "Low-High") {
+                sorted.sort((a, b) => calcValue(a) - calcValue(b));
+            }
+        }
+
+        setOrders(sorted);
     };
 
     // 📌 FILTER LOGIC
@@ -108,15 +183,48 @@ const OrdersScreen = () => {
         }
 
         const filtered = originalOrders.filter((item) => {
-            if (option === "Buy") return item.transaction_type === "Buy";
-            if (option === "Sell") return item.transaction_type === "Sell";
-            if (option === "Completed") return item.status === "Completed";
-            if (option === "Pending") return item.status === "Pending";
+            const st = normalizeStatus(item.status);
+
+            // ----- ORDERS FILTER (TAB 2) -----
+            if (selectedTab === 2) {
+
+                if (option === "Executed")
+                    return st === "completed" || st === "complete";
+
+                if (option === "Cancelled")
+                    return st === "cancelled" || st === "canceled";
+
+                if (option === "Rejected")
+                    return st === "rejected";
+
+                if (option === "Pending")
+                    return (
+                        st === "pending" ||
+                        st === "open" ||
+                        st === "trigger pending" ||
+                        st === "triggerpending" ||
+                        st === "openpending"
+                    );
+            }
+
+            // ----- POSITIONS FILTER (TAB 3) -----
+            if (selectedTab === 3) {
+                if (option === "Equity") return item.segment === "EQUITY";
+                if (option === "F&O") return item.segment === "FNO";
+            }
+
+            // ----- TRADES FILTER (TAB 1) -----
+            if (selectedTab === 1) {
+                if (option === "Equity") return item.segment === "EQUITY";
+                if (option === "F&O") return item.segment === "FNO";
+            }
+
             return true;
         });
 
         setOrders(filtered);
     };
+
     const cancelOrderApi = async (item) => {
 
         const userId = await AsyncStorage.getItem("userId");
@@ -154,7 +262,6 @@ const OrdersScreen = () => {
         return await response.json();
     };
 
-
     return (
         <>
             <SafeAreaView edges={["top", "bottom"]} style={styles.container}>
@@ -178,28 +285,53 @@ const OrdersScreen = () => {
                     <View style={styles.row}>
 
                         {/* SORT BUTTON */}
-                        <TouchableOpacity style={styles.iconRow} onPress={sortOrders}>
-                            {/* Icon Logic */}
-                            {sortOrder === null && (
-                                <Ionicons name="swap-vertical" size={16} color="#000" />
-                            )}
-                            {sortOrder === "asc" && (
-                                <Ionicons name="arrow-up" size={16} color="#000" />
-                            )}
-                            {sortOrder === "desc" && (
-                                <Ionicons name="arrow-down" size={16} color="#000" />
-                            )}
+                        <TouchableOpacity style={styles.iconRow} onPress={() => setSortOpen(true)}>
+                            <Ionicons name="swap-vertical" size={16} color="#000" />
                             <Text style={styles.actionText}>Sort</Text>
                         </TouchableOpacity>
 
                         {/* FILTER BUTTON */}
-                        <TouchableOpacity style={styles.iconRow} onPress={() => setIsFilterOpen(true)}>
-                            <Ionicons name="funnel-outline" size={16} color="#000" />
-                            <Text style={styles.actionText}>Filter</Text>
-                        </TouchableOpacity>
+                        {selectedTab === 2 && (
+                            <TouchableOpacity
+                                style={styles.iconRow}
+                                onPress={() => setIsFilterOpen(true)}
+                            >
+                                <Ionicons
+                                    name={selectedFilter !== "All" ? "funnel" : "funnel-outline"}
+                                    size={16}
+                                    color="#000"
+                                />
 
+                                <Text
+                                    style={[
+                                        styles.actionText,
+                                        { color: "#000" }
+                                    ]}
+                                >
+                                    Filter
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
                 </View>
+                <Modal visible={sortOpen} transparent animationType="fade">
+                    <TouchableOpacity style={styles.overlay} onPress={() => setSortOpen(false)}>
+                        <View style={styles.filterDropdown}>
+                            {sortMap[selectedTab].map((option) => (
+                                <TouchableOpacity
+                                    key={option}
+                                    style={styles.dropdownItem}
+                                    onPress={() => {
+                                        setSortOpen(false);
+                                        sortOrders(option);
+                                    }}
+                                >
+                                    <Text style={styles.dropdownText}>{option}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </TouchableOpacity>
+                </Modal>
 
                 {/* FILTER MODAL */}
                 <Modal
@@ -214,7 +346,7 @@ const OrdersScreen = () => {
                         onPress={() => setIsFilterOpen(false)}
                     >
                         <View style={styles.filterDropdown}>
-                            {filterOptions.map((option, index) => (
+                            {filterMap[selectedTab].map((option, index) => (
                                 <TouchableOpacity
                                     key={index}
                                     style={styles.dropdownItem}
@@ -226,6 +358,7 @@ const OrdersScreen = () => {
                                     <Text style={styles.dropdownText}>{option}</Text>
                                 </TouchableOpacity>
                             ))}
+
                         </View>
                     </TouchableOpacity>
                 </Modal>
@@ -262,18 +395,18 @@ const OrdersScreen = () => {
                                         status={item.status}
                                         price={`₹ ${Number(item.price).toFixed(2)}`}
                                         onModify={() => {
-                                            // navigation.navigate('TradeOrder', {
-                                            //     symbol: item.trading_symbol,
-                                            //     token: item.symbol_token,
-                                            //     name: item.script,
-                                            //     price: item.price,
-                                            //     quantity: item.quantity,
-                                            //     stoploss: item.stop_loss,
-                                            //     target: 0,
-                                            //     producttype: item.product_type,
-                                            //     internaltype: 'Modify',
-                                            //     orderid: item.orderid,
-                                            // });
+                                            navigation.navigate('TradeOrder', {
+                                                symbol: item.trading_symbol,
+                                                token: item.symbol_token,
+                                                name: item.script,
+                                                price: item.price,
+                                                quantity: item.quantity,
+                                                stoploss: item.stop_loss,
+                                                target: 0,
+                                                producttype: item.product_type,
+                                                internaltype: 'Modify',
+                                                orderid: item.orderid,
+                                            });
                                         }}
                                         onCancel={async () => {
                                             Alert.alert(
@@ -361,7 +494,8 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: '#fff'
+        backgroundColor: '#fff',
+        paddingBottom: 70,
     },
     topSliders: {
         backgroundColor: "#fff",
@@ -423,7 +557,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#eee",
         elevation: 6,
-        shadowColor: "#210f47",
+        shadowColor: "#210F47",
         shadowOpacity: 0.15,
         shadowRadius: 5,
         zIndex: 1000,

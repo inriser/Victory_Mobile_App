@@ -7,7 +7,7 @@ export const TOKENS = {
   REFRESH_TOKEN: "@angelone_refresh_token",
   CLIENT_ID: "@angelone_client_id",
 };
-
+const SHOW_KEY = "watchlist_show_names";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -62,6 +62,7 @@ export const AuthProvider = ({ children }) => {
     await AsyncStorage.removeItem(TOKENS.FEED_TOKEN);
     await AsyncStorage.removeItem(TOKENS.REFRESH_TOKEN);
     await AsyncStorage.removeItem(TOKENS.CLIENT_ID);
+    await AsyncStorage.removeItem(SHOW_KEY);
 
     setAuthToken(null);
     setFeedToken(null);

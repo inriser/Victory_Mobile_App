@@ -176,7 +176,7 @@ const StockCard = ({ stock }) => {
       </View>
 
       {/* OHLC */}
-      <View style={styles.statsContainer}>
+      {/* <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <Text style={styles.statLabel}>Open</Text>
           <Text style={styles.statValue}>
@@ -197,25 +197,50 @@ const StockCard = ({ stock }) => {
             {loading && currentLow === 0 ? '--' : `₹${currentLow.toFixed(2)}`}
           </Text>
         </View>
-      </View>
+      </View> */}
 
       {/* Market Analysis */}
       <View style={styles.analysisContainer}>
         <View style={styles.analysisHeader}>
-          <TouchableOpacity style={styles.navButton}>
-            <ChevronLeft size={16} color="#666" />
-          </TouchableOpacity>
 
           <Text style={styles.analysisTitle}>Market Analysis</Text>
 
-          <TouchableOpacity style={styles.navButton}>
-            <ChevronRight size={16} color="#666" />
-          </TouchableOpacity>
+          <View style={styles.chevronGroup}>
+            <TouchableOpacity style={styles.navButton}>
+              <ChevronLeft size={16} color="#666" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.navButton}>
+              <ChevronRight size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+
         </View>
 
         <Text style={styles.analysisText}>{stock.analysis}</Text>
       </View>
-
+      {/* Intervals */}
+      <View style={styles.intervalContainer}>
+        {intervals.map((interval) => (
+          <TouchableOpacity
+            key={interval}
+            style={[
+              styles.intervalButton,
+              selectedInterval === interval && styles.activeInterval,
+            ]}
+            onPress={() => setSelectedInterval(interval)}
+          >
+            <Text
+              style={[
+                styles.intervalText,
+                selectedInterval === interval && styles.activeIntervalText,
+              ]}
+            >
+              {interval}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
       {/* Main Chart */}
       <View style={styles.chartContainer}>
         {loading ? (
@@ -260,28 +285,7 @@ const StockCard = ({ stock }) => {
         )}
       </View>
 
-      {/* Intervals */}
-      <View style={styles.intervalContainer}>
-        {intervals.map((interval) => (
-          <TouchableOpacity
-            key={interval}
-            style={[
-              styles.intervalButton,
-              selectedInterval === interval && styles.activeInterval,
-            ]}
-            onPress={() => setSelectedInterval(interval)}
-          >
-            <Text
-              style={[
-                styles.intervalText,
-                selectedInterval === interval && styles.activeIntervalText,
-              ]}
-            >
-              {interval}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+
 
       {/* Action Buttons */}
       <View style={styles.actionsContainer}>
@@ -321,26 +325,30 @@ const StockCard = ({ stock }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 16,
     marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
+    margin: 20
   },
   stockHeader: {
+    backgroundColor: '#E6E0E9',
+    padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 16,
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
   },
   stockInfo: { flex: 1 },
   stockName: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '500',
     color: '#000',
     marginBottom: 4,
   },
@@ -351,8 +359,8 @@ const styles = StyleSheet.create({
   },
   priceContainer: { alignItems: 'flex-end' },
   price: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '500',
     color: '#000',
     marginBottom: 4,
   },
@@ -372,7 +380,7 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 12, color: '#666', marginBottom: 4 },
   statValue: { fontSize: 14, fontWeight: '600', color: '#000' },
 
-  analysisContainer: { marginBottom: 16 },
+  analysisContainer: { marginBottom: 16, backgroundColor: "#fff", paddingHorizontal: 10, },
   analysisHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -398,23 +406,25 @@ const styles = StyleSheet.create({
   chartContainer: {
     height: 250,
     marginBottom: 16,
-    backgroundColor: '#F9F9FB',
+    backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
+    paddingHorizontal: 10,
   },
 
   intervalContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 16,
-    paddingHorizontal: 4,
+    paddingHorizontal: 10,
+    backgroundColor: "#fff",
   },
   intervalButton: {
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
   },
-  activeInterval: { backgroundColor: '#2D1B69' },
+  activeInterval: { backgroundColor: '#210F47' },
   intervalText: {
     fontSize: 12,
     fontWeight: '600',
@@ -423,11 +433,15 @@ const styles = StyleSheet.create({
   activeIntervalText: { color: '#FFF' },
 
   actionsContainer: {
+    padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#F0F0F0',
+    backgroundColor: '#E6E0E9',
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
   },
   actionButton: { alignItems: 'center', gap: 4 },
   actionText: {
@@ -443,6 +457,12 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   noDataText: { fontSize: 14, color: '#999', fontWeight: '500' },
+  chevronGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
 });
 
 export default StockCard;

@@ -79,6 +79,7 @@ const TradeCard =
                     ) : (
                         // Only show entry date, no label
                         <Text style={styles.smallText}>
+                            <Text style={styles.smallBold}>Entry: </Text>
                             {formatFullPublishedDateTime(entryDate)}
                         </Text>
                     )}

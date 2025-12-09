@@ -101,8 +101,8 @@ export default function SignupScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   scroll: { padding: 24, alignItems: 'center' },
-  image: { width: '100%', height: 250 },
-  title: { fontSize: 22, fontWeight: '700', color: '#2F0079', marginVertical: 10, alignSelf: 'flex-start' },
+  image: { width: '100%', height: 250, marginTop: 20 },
+  title: { fontSize: 22, fontWeight: '700', color: '#210F47', marginVertical: 10, alignSelf: 'flex-start' },
   input: { width: '100%', borderWidth: 1, borderColor: '#ccc', borderRadius: 10, height: 45, paddingHorizontal: 12, marginTop: 12 },
   phoneContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#ccc', borderRadius: 10, width: '100%', height: 45, marginTop: 12, paddingHorizontal: 12 },
   prefix: { fontSize: 16, marginRight: 6, color: '#000' },
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   buttonRow: { flexDirection: 'row', marginTop: 25, justifyContent: 'space-between', width: '100%' },
   backBtn: { backgroundColor: '#EAEAEA', borderRadius: 25, paddingVertical: 10, paddingHorizontal: 25 },
   backText: { color: '#000', fontWeight: '600' },
-  nextBtn: { backgroundColor: '#2F0079', borderRadius: 25, paddingVertical: 10, paddingHorizontal: 25 },
+  nextBtn: { backgroundColor: '#210F47', borderRadius: 25, paddingVertical: 10, paddingHorizontal: 25 },
   nextText: { color: '#fff', fontWeight: '600' },
   note: { fontSize: 12, color: '#666', marginTop: 25, textAlign: 'center' },
 });

@@ -99,7 +99,7 @@ const TopMenuSlider = ({ currentRoute: propCurrentRoute }) => {
                     </Text>
 
                     {/* Full-height divider */}
-                    <View
+                    {/* <View
                         style={[
                             styles.divider,
                             {
@@ -108,13 +108,13 @@ const TopMenuSlider = ({ currentRoute: propCurrentRoute }) => {
                                     : "rgba(33,15,71,0.25)"
                             }
                         ]}
-                    />
+                    /> */}
 
-                    <Octicons
+                    {/* <Octicons
                         name="triangle-right"
                         size={15}
-                        color={isActiveTab('Watchlists') ? "#fff" : "#210f47"}
-                    />
+                        color={isActiveTab('Watchlists') ? "#fff" : "#210F47"}
+                    /> */}
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -146,36 +146,6 @@ const TopMenuSlider = ({ currentRoute: propCurrentRoute }) => {
                         News
                     </Text>
                 </TouchableOpacity>
-
-                {/* <TouchableOpacity
-                    style={[
-                        styles.tabWhite,
-                        isActiveTab('TradeScreen') && styles.activeTab
-                    ]}
-                    onPress={() => handleTabPress('TradeScreen')}
-                >
-                    <Text style={[
-                        styles.tabTextDark,
-                        isActiveTab('TradeScreen') && styles.activeTabText
-                    ]}>
-                        Trade Recommendation
-                    </Text>
-                </TouchableOpacity> */}
-
-                {/* <TouchableOpacity
-                    style={[
-                        styles.tabWhite,
-                        isActiveTab('OrdersScreen') && styles.activeTab
-                    ]}
-                    onPress={() => handleTabPress('OrdersScreen')}
-                >
-                    <Text style={[
-                        styles.tabTextDark,
-                        isActiveTab('OrdersScreen') && styles.activeTabText
-                    ]}>
-                        Orders
-                    </Text>
-                </TouchableOpacity> */}
             </ScrollView>
         </SafeAreaView>
     );
@@ -187,8 +157,8 @@ const styles = StyleSheet.create({
         paddingTop: 6,
     },
     activeTab: {
-        backgroundColor: "#210f47",
-        shadowColor: "#210f47",
+        backgroundColor: "#210F47",
+        shadowColor: "#210F47",
         shadowOpacity: 0.3,
     },
     activeTabText: {
@@ -197,7 +167,7 @@ const styles = StyleSheet.create({
     scrollContainer: {
         flexDirection: "row",
         alignItems: "center",
-        paddingHorizontal: 10,
+        paddingHorizontal: 20,
         paddingVertical: 6,
     },
     tabWhite: {
@@ -215,7 +185,7 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     tabTextDark: {
-        color: "#210f47",
+        color: "#210F47",
         fontSize: 12,
         fontFamily: "Poppins-Medium",
         fontWeight: "500",
@@ -242,12 +212,12 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     tabButtonActive: {
-        backgroundColor: '#210f47', // purple when active
+        backgroundColor: '#210F47', // purple when active
     },
     tabButtonText: {
         fontSize: 12,
         fontWeight: '500',
-        color: '#210f47',
+        color: '#210F47',
         fontFamily: "Poppins-Medium"
     },
     tabButtonTextActive: {
@@ -267,14 +237,14 @@ const styles = StyleSheet.create({
         marginRight: 8,
     },
     watchlistLeft: {
-        backgroundColor: "#210f47",
+        backgroundColor: "#210F47",
         borderTopLeftRadius: 40,
         borderBottomLeftRadius: 40,
         paddingVertical: 5,
         paddingHorizontal: 14,
     },
     watchlistRight: {
-        backgroundColor: "#210f47",
+        backgroundColor: "#210F47",
         borderTopRightRadius: 40,
         borderBottomRightRadius: 40,
         paddingHorizontal: 10,

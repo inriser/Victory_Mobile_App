@@ -44,8 +44,8 @@ const GainerLoserCard = ({ symbol, name, price, change, percentChange }) => {
         <View style={styles.card}>
             {/* Left: Icon & Name */}
             <View style={styles.leftSection}>
-                <View style={styles.iconContainer}>
-                    <Text style={styles.iconText}>{symbol[0]}</Text>
+                <View style={styles.logoFallback}>
+                    <Text style={styles.logoFallbackText}>{symbol[0]}</Text>
                 </View>
                 <View>
                     <Text style={styles.name} numberOfLines={1}>{name}</Text>
@@ -94,33 +94,27 @@ const GainerLoserCard = ({ symbol, name, price, change, percentChange }) => {
 
 const styles = StyleSheet.create({
     card: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: '#FFF',
-        borderRadius: 20,
-        padding: 16,
-        marginBottom: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#fff",
+        padding: 12,
+        borderRadius: 14,
         elevation: 2,
-        height: 80,
+        marginVertical: 6,
     },
+    logoFallback: {
+        width: 34, height: 34,
+        borderRadius: 17,
+        backgroundColor: "#210F47",
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 12,
+    },
+    logoFallbackText: { color: "#fff", fontWeight: "700", fontSize: 13 },
     leftSection: {
         flexDirection: 'row',
         alignItems: 'center',
         flex: 1.2,
-    },
-    iconContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#EEF2FF',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 12,
     },
     iconPlaceholder: {
         width: 40,
@@ -128,11 +122,6 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         backgroundColor: '#F1F5F9',
         marginRight: 12,
-    },
-    iconText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#4F46E5',
     },
     name: {
         fontSize: 15,
@@ -146,25 +135,23 @@ const styles = StyleSheet.create({
         color: '#64748B',
     },
     chartSection: {
-        width: 80,
+        width: 70,
         height: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginHorizontal: 8,
     },
     rightSection: {
         alignItems: 'flex-end',
         flex: 1,
     },
     price: {
-        fontSize: 15,
-        fontWeight: '700',
+        fontSize: 14, fontWeight: "600",
         color: '#1E293B',
         marginBottom: 2,
     },
     change: {
-        fontSize: 12,
+        fontSize: 10,
         fontWeight: '600',
+        textAlign: "right",
+        width: 80
     },
     loadingText: {
         fontSize: 12,

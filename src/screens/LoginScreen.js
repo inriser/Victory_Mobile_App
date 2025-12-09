@@ -1,3 +1,4 @@
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import React, { useRef, useState } from 'react';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -85,82 +86,89 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <Image
-          source={require('../../assets/login.png')}
-          style={styles.image}
-          resizeMode="contain"
-        />
-
-        <Text style={styles.title}>Login</Text>
-
-        {/* Phone Number Input */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.prefix}>+91</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Phone No."
-            keyboardType="phone-pad"
-            maxLength={10}
-            value={phone}
-            onChangeText={setPhone}
+      <KeyboardAwareScrollView
+        extraHeight={300}
+        enableOnAndroid={true}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.scroll}
+      >
+        <ScrollView contentContainerStyle={styles.scroll}>
+          <Image
+            source={require('../../assets/login.png')}
+            style={styles.image}
+            resizeMode="contain"
           />
-        </View>
 
-        {/* OTP Inputs */}
-        <View style={styles.otpContainer}>
-          {otp.map((digit, index) => (
+          <Text style={styles.title}>Login</Text>
+
+          {/* Phone Number Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.prefix}>+91</Text>
             <TextInput
-              key={index}
-              ref={(el) => (inputRefs.current[index] = el)}
-              style={styles.otpBox}
-              value={digit}
-              onChangeText={(text) => handleOtpChange(text, index)}
-              keyboardType="number-pad"
-              maxLength={1}
-              textAlign="center"
+              style={styles.input}
+              placeholder="Enter Phone No."
+              keyboardType="phone-pad"
+              maxLength={10}
+              value={phone}
+              onChangeText={setPhone}
             />
-          ))}
-        </View>
+          </View>
+
+          {/* OTP Inputs */}
+          <View style={styles.otpContainer}>
+            {otp.map((digit, index) => (
+              <TextInput
+                key={index}
+                ref={(el) => (inputRefs.current[index] = el)}
+                style={styles.otpBox}
+                value={digit}
+                onChangeText={(text) => handleOtpChange(text, index)}
+                keyboardType="number-pad"
+                maxLength={1}
+                textAlign="center"
+              />
+            ))}
+          </View>
 
 
-        {/* Buttons */}
-        <TouchableOpacity
-          style={[styles.nextBtn, loading && { opacity: 0.5 }]}
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          <Text style={styles.nextText}>
-            {loading ? 'Checking...' : 'Next'}
-          </Text>
-        </TouchableOpacity>
-
-        <View style={styles.signupRow}>
-          <Text>No Account?</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-            <Text style={styles.signUpLink}> Sign up</Text>
+          {/* Buttons */}
+          <TouchableOpacity
+            style={[styles.nextBtn, loading && { opacity: 0.5 }]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            <Text style={styles.nextText}>
+              {loading ? 'Checking...' : 'Next'}
+            </Text>
           </TouchableOpacity>
-        </View>
 
-        <Text style={styles.disclaimer}>
-          Disclaimer: Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-          sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        </Text>
+          <View style={styles.signupRow}>
+            <Text>No Account?</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+              <Text style={styles.signUpLink}> Sign up</Text>
+            </TouchableOpacity>
+          </View>
 
-        <Text style={styles.tnc}>Accept T&Cs</Text>
-      </ScrollView>
-    </SafeAreaView>
+          <Text style={styles.disclaimer}>
+            Disclaimer: Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+            sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          </Text>
+
+          <Text style={styles.tnc}>Accept T&Cs</Text>
+        </ScrollView>
+      </KeyboardAwareScrollView>
+    </SafeAreaView >
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  scroll: { padding: 24, alignItems: 'center' },
-  image: { width: '100%', height: 250 },
+  scroll: { padding: 12, alignItems: 'center' },
+  image: { width: '100%', height: 220, marginTop: 90 },
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#2F0079',
+    color: '#210F47',
     marginVertical: 10,
   },
   inputContainer: {
@@ -199,7 +207,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   nextBtn: {
-    backgroundColor: '#2F0079',
+    backgroundColor: '#210F47',
     borderRadius: 25,
     paddingVertical: 10,
     paddingHorizontal: 30,
@@ -211,7 +219,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     alignItems: 'center',
   },
-  signUpLink: { color: '#2F0079', fontWeight: '700' },
+  signUpLink: { color: '#210F47', fontWeight: '700' },
   disclaimer: {
     fontSize: 12,
     color: '#666',

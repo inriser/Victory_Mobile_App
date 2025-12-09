@@ -155,7 +155,7 @@ export default function TradeOrderListScreen({ navigation }) {
     if (loading) {
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#2e0b66" />
+          <ActivityIndicator size="large" color="#210F47" />
           <Text style={{ marginTop: 10, color: '#555' }}>Loading stocks...</Text>
         </View>
       );

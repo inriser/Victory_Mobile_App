@@ -14,7 +14,7 @@ import OrderInputBox from "../components/OrderInputBox";
 import { getDeviceId } from "../utils/deviceId";
 import { useAuth } from '../context/AuthContext';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 export default function TradeOrderScreen({ navigation }) {
   const { authToken } = useAuth();
   const { setAuthData } = useAuth();
@@ -436,69 +436,75 @@ export default function TradeOrderScreen({ navigation }) {
         title={symbol}
         onBack={() => navigation.goBack()}
       />
+      <KeyboardAwareScrollView
+        extraHeight={300}
+        enableOnAndroid={true}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.scroll}
+      >
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
 
-        <View style={styles.radioContainer}>
-          <NseBseRadioBox
-            selected={selected}
-            nseLtp={nseLtp}
-            bseLtp={bseLtp}
-            onSelect={setSelected}
-          />
-        </View>
+          <View style={styles.radioContainer}>
+            <NseBseRadioBox
+              selected={selected}
+              nseLtp={nseLtp}
+              bseLtp={bseLtp}
+              onSelect={setSelected}
+            />
+          </View>
 
-        <View style={styles.menuContainer}>
-          {/* <OrderTopMenu
+          <View style={styles.menuContainer}>
+            {/* <OrderTopMenu
             items={menuItems}
             defaultSelected="Intraday"
             onSelect={handleSegmentChange}
           /> */}
-          <OrderTopMenu
-            items={menuItems}
-            defaultSelected={selectedMenu}   // ⭐ now fully controlled
-            onSelect={(name) => {
-              setSelectedMenu(name);        // UI highlight
-              handleSegmentChange(name);    // backend / logic mapping
-            }}
-          />
+            <OrderTopMenu
+              items={menuItems}
+              defaultSelected={selectedMenu}   // ⭐ now fully controlled
+              onSelect={(name) => {
+                setSelectedMenu(name);        // UI highlight
+                handleSegmentChange(name);    // backend / logic mapping
+              }}
+            />
 
-        </View>
+          </View>
 
-        <View style={styles.inputsWrapper}>
-          <OrderInputBox
-            label="Price"
-            value={price}
-            onChange={handleUserPriceInput}
-            isValid={isPriceValid}
-          />
+          <View style={styles.inputsWrapper}>
+            <OrderInputBox
+              label="Price"
+              value={price}
+              onChange={handleUserPriceInput}
+              isValid={isPriceValid}
+            />
 
-          <OrderInputBox
-            label="Quantity"
-            value={qty}
-            onChange={setQty}
-            isValid={isQtyValid}
-          />
+            <OrderInputBox
+              label="Quantity"
+              value={qty}
+              onChange={setQty}
+              isValid={isQtyValid}
+            />
 
-          <OrderInputBox
-            label="Target"
-            value={target}
-            onChange={setTarget}
-            isValid={isTargetValid}
-            editable={!isModifyMode}
-          />
+            <OrderInputBox
+              label="Target"
+              value={target}
+              onChange={setTarget}
+              isValid={isTargetValid}
+              editable={!isModifyMode}
+            />
 
-          <OrderInputBox
-            label="Stop Loss"
-            value={stopLoss}
-            onChange={setStopLoss}
-            isValid={isStopLossValid}
-            editable={!isModifyMode}
-          />
+            <OrderInputBox
+              label="Stop Loss"
+              value={stopLoss}
+              onChange={setStopLoss}
+              isValid={isStopLossValid}
+              editable={!isModifyMode}
+            />
 
-          {/* <Text>{internaltype}</Text> */}
+            {/* <Text>{internaltype}</Text> */}
 
-          {/* <OrderDropdownBox
+            {/* <OrderDropdownBox
             label="Order Type"
             options={["Market", "Limit", "SL_Limit", "SL_Market"]}
             zIndex={3000}
@@ -512,159 +518,157 @@ export default function TradeOrderScreen({ navigation }) {
             zIndexInverse={1000}
           /> */}
 
-        </View>
-      </ScrollView>
-
-      <View style={styles.bottomContainer}>
-
-        <View style={styles.summaryContainer}>
-          <View style={styles.row}>
-            <Text style={styles.label}>Balance available</Text>
-            <Text style={styles.value}>₹{format4(balance)}</Text>
           </View>
+        </ScrollView>
+</KeyboardAwareScrollView>
+        <View style={styles.bottomContainer}>
 
-          <View style={styles.row}>
-            <Text style={styles.label}>Order value</Text>
-            <Text style={styles.value}>₹{format2(orderValue)}</Text>
-          </View>
+          <View style={styles.summaryContainer}>
+            <View style={styles.row}>
+              <Text style={styles.label}>Balance available</Text>
+              <Text style={styles.value}>₹{format4(balance)}</Text>
+            </View>
 
-          <View style={styles.row}>
-            <Text style={styles.label}>Brokerage</Text>
-            <Text style={styles.value}>₹{format2(brokerage)}</Text>
-          </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Order value</Text>
+              <Text style={styles.value}>₹{format2(orderValue)}</Text>
+            </View>
 
-          <View style={styles.row}>
-            <Text style={styles.label}>Charges</Text>
-            <Text style={styles.value}>
-              ₹{format2(combinedCharges)}
-            </Text>
-          </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Brokerage</Text>
+              <Text style={styles.value}>₹{format2(brokerage)}</Text>
+            </View>
 
-          <View style={styles.row}>
-            <Text style={styles.label}>Closing balance</Text>
-            <Text style={styles.value}>₹{format2(closingBalance)}</Text>
-          </View>
-          <Ionicons
-            name="refresh"
-            size={20}
-            color="#210f47"
-            style={styles.refreshIcon}
-            onPress={() => {
-              fetchFunds(selectedSegmentType);
-              fetchLtp();
-              fetchBrokerage();
-            }}
-          />
-        </View>
-        {/* SWIPE BUTTON */}
-        <View style={{ position: "relative", width: "100%" }}>
-          <SwipeButton
-            key={swipeKey}
-            disabled={false}
-            title="Swipe right to buy >>"
-            titleColor="#210f47"
-            titleFontSize={14}
-            railBackgroundColor="#ffffff"
-            railFillBackgroundColor="#ffffff"
-            thumbIconBackgroundColor="#4CAF50"
-            thumbIconBorderColor="transparent"
-            railFillBorderColor="transparent"
-            disabledThumbIconBackgroundColor="#4CAF50"
-            disabledRailBackgroundColor="#ffffff"
-            containerStyles={{
-              borderRadius: 25,
-              height: 52,
-              width: "100%",
-              backgroundColor: "#ffffff",
-            }}
+            <View style={styles.row}>
+              <Text style={styles.label}>Charges</Text>
+              <Text style={styles.value}>
+                ₹{format2(combinedCharges)}
+              </Text>
+            </View>
 
-            thumbIconComponent={() => (
-              <Text style={{ color: "#fff", fontWeight: "700" }}>Buy</Text>
-            )}
-            onSwipeSuccess={() => {
-              if (!authToken) {
-                setShowAngelOneModal(true);
-                setSwipeKey(Date.now());
-                return;
-              }
-              if (!isOrderValid) {
-                alert("⚠ Fix order conditions");
-                setSwipeKey(Date.now());
-                return;
-              }
-              // placeOrder();
-              if (internaltype?.toLowerCase() === "modify") {
-                modifyOrder();
-              } else {
-                placeOrder();
-              }
-              setSwipeKey(Date.now());
-            }}
-          />
-
-          <TouchableOpacity
-            onPress={() => setShowAngelOneModal(true)}
-            style={{
-              position: "absolute",
-              right: 12,
-              top: 14,
-              zIndex: 10,
-            }}
-          >
-            <Image
-              source={require("../../assets/angelone.png")}
-              style={{
-                width: 35,
-                height: 35,
-                resizeMode: "contain",
+            <View style={styles.row}>
+              <Text style={styles.label}>Closing balance</Text>
+              <Text style={styles.value}>₹{format2(closingBalance)}</Text>
+            </View>
+            <Ionicons
+              name="refresh"
+              size={20}
+              color="#210F47"
+              style={styles.refreshIcon}
+              onPress={() => {
+                fetchFunds(selectedSegmentType);
+                fetchLtp();
+                fetchBrokerage();
               }}
             />
-          </TouchableOpacity>
+          </View>
+          {/* SWIPE BUTTON */}
+          <View style={{ position: "relative", width: "100%" }}>
+            <SwipeButton
+              key={swipeKey}
+              disabled={false}
+              title="Swipe right to buy >>"
+              titleColor="#210F47"
+              titleFontSize={14}
+              railBackgroundColor="#ffffff"
+              railFillBackgroundColor="#ffffff"
+              thumbIconBackgroundColor="#4CAF50"
+              thumbIconBorderColor="transparent"
+              railFillBorderColor="transparent"
+              disabledThumbIconBackgroundColor="#4CAF50"
+              disabledRailBackgroundColor="#ffffff"
+              containerStyles={{
+                borderRadius: 25,
+                height: 52,
+                width: "100%",
+                backgroundColor: "#ffffff",
+              }}
 
+              thumbIconComponent={() => (
+                <Text style={{ color: "#fff", fontWeight: "700" }}>Buy</Text>
+              )}
+              onSwipeSuccess={() => {
+                if (!authToken) {
+                  setShowAngelOneModal(true);
+                  setSwipeKey(Date.now());
+                  return;
+                }
+                if (!isOrderValid) {
+                  alert("⚠ Fix order conditions");
+                  setSwipeKey(Date.now());
+                  return;
+                }
+                // placeOrder();
+                if (internaltype?.toLowerCase() === "modify") {
+                  modifyOrder();
+                } else {
+                  placeOrder();
+                }
+                setSwipeKey(Date.now());
+              }}
+            />
+
+            <TouchableOpacity
+              onPress={() => setShowAngelOneModal(true)}
+              style={{
+                position: "absolute",
+                right: 12,
+                top: 14,
+                zIndex: 10,
+              }}
+            >
+              <Image
+                source={require("../../assets/angelone.png")}
+                style={{
+                  width: 35,
+                  height: 35,
+                  resizeMode: "contain",
+                }}
+              />
+            </TouchableOpacity>
+
+          </View>
         </View>
-      </View>
-      {/* ⭐ AngelOne Login Modal */}
-      {/* ⭐ AngelOne Login Modal */}
-      <Modal
-        visible={showAngelOneModal}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setShowAngelOneModal(false)}
-      >
-        <View style={{ flex: 1, backgroundColor: "#fff" }}>
+        {/* ⭐ AngelOne Login Modal */}
+        {/* ⭐ AngelOne Login Modal */}
+        <Modal
+          visible={showAngelOneModal}
+          animationType="slide"
+          transparent={false}
+          onRequestClose={() => setShowAngelOneModal(false)}
+        >
+          <View style={{ flex: 1, backgroundColor: "#fff" }}>
 
-          <TouchableOpacity
-            style={{
-              position: "absolute",
-              top: 40,
-              right: 20,
-              zIndex: 999,
-              backgroundColor: "#eee",
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-            onPress={() => setShowAngelOneModal(false)}
-          >
-            <Text style={{ fontSize: 18 }}>✕</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                position: "absolute",
+                top: 40,
+                right: 20,
+                zIndex: 999,
+                backgroundColor: "#eee",
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+              onPress={() => setShowAngelOneModal(false)}
+            >
+              <Text style={{ fontSize: 18 }}>✕</Text>
+            </TouchableOpacity>
 
-          <WebView
-            source={{
-              uri:
-                "https://smartapi.angelone.in/publisher-login?api_key=IG8g0BMf&state=tradeorder",
-            }}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            useWebKit={true}
-            onNavigationStateChange={handleAngelOneNavigation}
-          />
-        </View>
-      </Modal>
-
-
+            <WebView
+              source={{
+                uri:
+                  "https://smartapi.angelone.in/publisher-login?api_key=IG8g0BMf&state=tradeorder",
+              }}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              useWebKit={true}
+              onNavigationStateChange={handleAngelOneNavigation}
+            />
+          </View>
+        </Modal>
     </SafeAreaView>
   );
 }

@@ -44,23 +44,23 @@ const TradeOrderTabs = ({ onTabChange, activeTab }) => {
                     <View style={styles.pagination}>
                         {orderTabs.map((item, index) => (
                             <TouchableOpacity
-                               key={item.id}
+                                key={item.id}
                                 style={[
                                     styles.pageBtn,
                                     active === item.id
-                                        ? { backgroundColor: "#2e0b66" }
+                                        ? { backgroundColor: "#210F47" }
                                         : { backgroundColor: "#fff" }
                                 ]}
                                 onPress={() => handlePress(item.id)}
                             >
                                 <Text
-                                style={[
-                                    styles.pageText,
-                                    active === item.id ? styles.activeText : styles.inactiveText,
-                                ]}
-                            >
-                                {item.name}
-                            </Text>
+                                    style={[
+                                        styles.pageText,
+                                        active === item.id ? styles.activeText : styles.inactiveText,
+                                    ]}
+                                >
+                                    {item.name}
+                                </Text>
                             </TouchableOpacity>
                         ))}
 
@@ -91,33 +91,27 @@ const styles = StyleSheet.create({
     pagination: {
         flexDirection: "row",
         alignItems: "center",
-        paddingVertical: 6,
-        paddingHorizontal: 20,
+        paddingVertical: 5,
+        paddingHorizontal: 16,
     },
     pageBtn: {
-        minWidth: 64,
-        paddingHorizontal: 14,
-        height: 30,
-        justifyContent: "center",
-        alignItems: "center",
-        // paddingHorizontal: 9,
-        borderRadius: 20,
-        marginRight: 12,
-
-        // Shadow for iOS
+        backgroundColor: "#fff",
+        borderRadius: 40,
+        paddingVertical: 5,
+        paddingHorizontal: 16,
+        marginRight: 10,
         shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.15,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 2 },
-
-        // Shadow for Android
-        elevation: 3,
+        shadowRadius: 1.5,
+        elevation: 2,
     },
 
     pageText: {
+        color: "#210F47",
         fontSize: 12,
-        textAlign: "center",
-        paddingHorizontal: 2,
+        fontFamily: "Poppins-Medium",
+        fontWeight: "500",
     },
 
     activeText: {
@@ -161,7 +155,7 @@ const styles = StyleSheet.create({
     addMoreBtn: {
         marginTop: 16,
         alignSelf: "center",
-        backgroundColor: "#2e0b66",
+        backgroundColor: "#210F47",
         paddingVertical: 10,
         paddingHorizontal: 30,
         borderRadius: 20,
@@ -188,7 +182,7 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         paddingHorizontal: 16,
         borderRadius: 20,
-        backgroundColor: "#2e0b66",
+        backgroundColor: "#210F47",
     },
     deleteBox: {
         width: 260,
@@ -215,7 +209,7 @@ const styles = StyleSheet.create({
         padding: 10,
         paddingHorizontal: 25,
         borderRadius: 8,
-        backgroundColor: "red",
+        backgroundColor: "#D32F2F",
     },
     noText: { color: "#333", fontWeight: "600" },
     yesText: { color: "#fff", fontWeight: "600" },

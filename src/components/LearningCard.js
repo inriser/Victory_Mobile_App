@@ -43,32 +43,32 @@ const LearningCard = ({
     const [progress, setProgress] = useState(initialProgress);
 
     useEffect(() => {
-    if (isFocused) {
-        let mounted = true;
-        const load = async () => {
-            if (!id) return;
-            try {
-                const chRes = await axiosInstance.get(`/chaptermaster/module/${id}`);
-                const chData = chRes.data.data ?? [];
-                if (mounted) setChapters(chData);
+        if (isFocused) {
+            let mounted = true;
+            const load = async () => {
+                if (!id) return;
+                try {
+                    const chRes = await axiosInstance.get(`/chaptermaster/module/${id}`);
+                    const chData = chRes.data.data ?? [];
+                    if (mounted) setChapters(chData);
 
-                const userId = await AsyncStorage.getItem("userId");
-                if (!userId) {
-                    setProgress(initialProgress);
-                    return;
+                    const userId = await AsyncStorage.getItem("userId");
+                    if (!userId) {
+                        setProgress(initialProgress);
+                        return;
+                    }
+
+                    const res = await axiosInstance.get(`/learningprogress/module/${userId}/${id}`);
+                    const percentage = res.data.data?.progress ?? 0;
+                    if (mounted) setProgress(percentage / 100);
+                } catch (err) {
+                    console.log("LearningCard load error:", err);
                 }
-
-                const res = await axiosInstance.get(`/learningprogress/module/${userId}/${id}`);
-                const percentage = res.data.data?.progress ?? 0;
-                if (mounted) setProgress(percentage / 100);
-            } catch (err) {
-                console.log("LearningCard load error:", err);
-            }
-        };
-        load();
-        return () => { mounted = false };
-    }
-}, [id, isFocused]);
+            };
+            load();
+            return () => { mounted = false };
+        }
+    }, [id, isFocused]);
 
 
     const getChunk = () => {
@@ -251,11 +251,11 @@ const styles = StyleSheet.create({
         width: 24,
         height: 24,
         borderRadius: 16.5,
-        backgroundColor: '#333066',
+        backgroundColor: '#210F47',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 13,
-
+        marginBottom: 7,
     },
     miniCardNumber: {
         color: '#fff',
