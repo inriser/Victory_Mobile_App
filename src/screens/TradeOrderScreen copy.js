@@ -18,66 +18,6 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 export default function TradeOrderScreen({ navigation }) {
   const { authToken } = useAuth();
   const { setAuthData } = useAuth();
-  const [validationErrors, setValidationErrors] = useState([]);
-  const [showTooltip, setShowTooltip] = useState(false);
-
-  const runValidations = () => {
-    const errors = [];
-
-    // Clean numeric LTP
-    const cleanLtp = (raw) => {
-      if (!raw) return 0;
-      return Number(String(raw).replace(/[^\d.]/g, "")) || 0;
-    };
-
-    const p = parseFloat(price?.trim() || "0");
-    const q = parseInt(qty?.trim() || "0");
-    const tg = parseFloat(target?.trim() || "0");
-    const sl = parseFloat(stopLoss?.trim() || "0");
-
-    const ltp = cleanLtp(selected === "NSE" ? nseLtp : bseLtp);
-
-    const br = parseFloat(brokerage || 0);
-    const ch = parseFloat(charges || 0);
-    const tx = parseFloat(taxes || 0);
-    const bal = parseFloat(balance || 0);
-
-    // PRICE cannot be negative
-    if (p < 0) {
-      errors.push("Price cannot be negative.");
-    }
-
-    // LIMIT PRICE validation (Market order allowed)
-    if (p > 0) {
-      const lower = ltp * 0.8;
-      const upper = ltp * 1.2;
-
-      if (p < lower || p > upper) {
-        errors.push(
-          `Limit price must be within 20% of LTP (${lower.toFixed(2)} - ${upper.toFixed(2)})`
-        );
-      }
-    }
-
-    // QUANTITY
-    if (q <= 0) errors.push("Quantity must be greater than 0.");
-
-    const totalCost = p * q + br + ch + tx;
-    if (totalCost > bal)
-      errors.push("Insufficient balance. Order value + charges exceed available funds.");
-
-    // TARGET
-    if (tg > 0 && tg < ltp)
-      errors.push(`Target cannot be below LTP (${ltp}).`);
-
-    // STOP LOSS
-    if (sl > 0 && sl > ltp)
-      errors.push(`Stop Loss cannot be above LTP (${ltp}).`);
-
-    setValidationErrors(errors);
-    return errors.length === 0;
-  };
-
 
   const handleAngelOneNavigation = async (navState) => {
     const { url } = navState;
@@ -177,18 +117,7 @@ export default function TradeOrderScreen({ navigation }) {
   const fetchBrokerage = async () => {
     try {
       const symbolToken = passedToken || "";
-
-      // ⭐ Get current LTP
-      let liveLtp = parseFloat(
-        selected === "NSE"
-          ? nseLtp.replace("₹", "")
-          : bseLtp.replace("₹", "")
-      ) || 0;
-
-      // ⭐ Price to send → If user price = 0 → use LTP
-      const P = (parseFloat(price) === 0 ? liveLtp : parseFloat(price));
-
-      const url = `${apiUrl}/api/brokerage/calculate?price=${P}&quantity=${qty}&segment=${segment}&symbol=${symbol}&symboltoken=${symbolToken}&exchange=${selected}`;
+      const url = `${apiUrl}/api/brokerage/calculate?price=${price}&quantity=${qty}&segment=${segment}&symbol=${symbol}&symboltoken=${symbolToken}&exchange=${selected}`;
 
       const res = await fetch(url, {
         method: "GET",
@@ -197,7 +126,6 @@ export default function TradeOrderScreen({ navigation }) {
           Accept: "application/json",
         },
       });
-
       const data = await res.json();
       if (data.success) {
         setBrokerage(data.angelOneBrokerage);
@@ -209,96 +137,70 @@ export default function TradeOrderScreen({ navigation }) {
     }
   };
 
-
   useEffect(() => {
-    const p = parseFloat(price || 0);
-    const q = parseInt(qty || 0);
-    const tg = parseFloat(target || 0);
-    const sl = parseFloat(stopLoss || 0);
+    const p = parseFloat(price);
+    const q = parseInt(qty);
+    const tg = parseFloat(target);
+    const sl = parseFloat(stopLoss);
 
-    const rawLtp = selected === "NSE" ? nseLtp : bseLtp;
-    const ltp = Number(String(rawLtp).replace(/[^\d.]/g, "")) || 0;
+    const ltp = parseFloat(
+      selected === "NSE"
+        ? nseLtp.replace("₹", "")
+        : bseLtp.replace("₹", "")
+    );
 
-    // ⭐ PRICE VALIDATION (same as runValidations)
-    if (p === 0) {
-      setIsPriceValid(true); // MARKET order always valid
-    } else {
-      const lower = ltp * 0.8;
-      const upper = ltp * 1.2;
-      setIsPriceValid(p >= lower && p <= upper);
-    }
-
-    // QTY
+    setIsPriceValid(p > 0);
     setIsQtyValid(q > 0);
-
-    // TARGET (must be above LTP if > 0)
     setIsTargetValid(tg === 0 || tg > ltp);
-
-    // STOP LOSS (must be below LTP if > 0)
     setIsStopLossValid(sl === 0 || sl < ltp);
 
-  }, [price, qty, target, stopLoss, nseLtp, bseLtp, selected]);
+  }, [price, qty, target, stopLoss, nseLtp, bseLtp]);
 
 
   // BROKERAGE AUTO UPDATE
   useEffect(() => {
-    if (qty) {
+    if (price && qty) {
       fetchBrokerage();
     }
-  }, [price, qty, segment, selected, nseLtp, bseLtp]);
-
+  }, [price, qty, segment, selected]);
 
   // -------------------------
   // 🔢 ORDER VALUE + Closing balance
   // -------------------------
   useEffect(() => {
-    let p = parseFloat(price) || 0;
+    const p = parseFloat(price) || 0;
     const q = parseInt(qty) || 0;
-
-    // ⭐ If price is 0 → use LTP (market order)
-    const ltp = parseFloat(
-      selected === "NSE"
-        ? nseLtp.replace("₹", "")
-        : bseLtp.replace("₹", "")
-    ) || 0;
-
-    if (p === 0) {
-      p = ltp;
-    }
 
     const ov = p * q;
     setOrderValue(ov);
+    const cb =
+      balance - (ov - brokerage - taxes - charges);
 
-    const cb = balance - (ov + brokerage + taxes + charges);
     setClosingBalance(cb);
 
-  }, [price, qty, nseLtp, bseLtp, balance, brokerage, charges, taxes]);
 
+  }, [price, qty, balance, brokerage, charges, taxes]);
 
   const modifyOrder = async () => {
     try {
       const userId = await AsyncStorage.getItem("userId");
       const deviceId = await getDeviceId();
 
-      const p = parseFloat(price?.trim() || "0");
-
       const payload = {
         variety: "NORMAL",
-        orderid: passedOrderId,
-        tradingsymbol: symbol,
-        symboltoken: passedToken,
-        exchange: selected,
-
-        ordertype: p === 0 ? "MARKET" : "LIMIT",
-
-        producttype: segment,
+        orderid: passedOrderId,        // ⭐ REQUIRED
+        tradingsymbol: symbol,         // e.g., SBIN-EQ
+        symboltoken: passedToken,      // e.g., 3045
+        exchange: selected,            // NSE / BSE
+        ordertype: "LIMIT",            // only LIMIT supported for modify
+        producttype: segment,          // INTRADAY / DELIVERY / MARGIN
         duration: "DAY",
         transactiontype: "BUY",
         squareoff: 0,
-        stoploss: parseFloat(stopLoss || 0),
-
-        price: p === 0 ? 0 : p,
-        quantity: String(qty)
+        stoploss: stopLoss || 0,
+        script: symbol,
+        price: String(price),          // STRING recommended
+        quantity: String(qty)          // STRING recommended
       };
 
       const res = await fetch(`${apiUrl}/api/order/modify`, {
@@ -326,31 +228,21 @@ export default function TradeOrderScreen({ navigation }) {
     }
   };
 
-
   const placeOrder = async () => {
     try {
       const userId = await AsyncStorage.getItem("userId");
-      const deviceId = await getDeviceId();
-
-      // ⭐ FIX: price empty → 0
-      const p = parseFloat(price?.trim() || "0");
+      const deviceId = await getDeviceId();  // your device MAC/unique ID
 
       const payload = {
         variety: "NORMAL",
-        tradingsymbol: symbol,
-        symboltoken: passedToken,
+        tradingsymbol: symbol,         // e.g., "SBIN-EQ"
+        symboltoken: passedToken,      // e.g., "3045"
         transactiontype: "BUY",
-        exchange: selected,
-
-        // ⭐ FIXED: now p works properly
-        ordertype: p === 0 ? "MARKET" : "LIMIT",
-
-        producttype: segment,
+        exchange: selected,            // NSE / BSE
+        ordertype: "LIMIT",            // MARKET / LIMIT
+        producttype: segment,          // INTRADAY / DELIVERY
         duration: "DAY",
-
-        // Market order must send 0 price
-        price: p === 0 ? 0 : p,
-
+        price: parseFloat(price),          // string is recommended
         squareoff: "0",
         stoploss: parseFloat(stopLoss || 0),
         quantity: parseFloat(qty),
@@ -382,7 +274,6 @@ export default function TradeOrderScreen({ navigation }) {
     }
   };
 
-
   useEffect(() => {
     if (!isUserTypedPrice) return;
 
@@ -392,28 +283,6 @@ export default function TradeOrderScreen({ navigation }) {
 
     return () => clearTimeout(timer);
   }, [isUserTypedPrice]);
-
-  const handleNumericInput = (val, setter) => {
-    // Allow only numbers and decimal
-    if (val !== "" && isNaN(val)) return;
-
-    // If empty => keep 0
-    if (val === "" || val === null) {
-      setter("0");
-      return;
-    }
-
-    // ⭐ MAIN FIX:
-    // If current textbox shows "0", and user types something:
-    // Example: val = "06" → we convert to "6"
-    if (val.length > 1 && val.startsWith("0") && !val.startsWith("0.")) {
-      val = val.replace(/^0+/, ""); // remove all leading zeros
-      if (val === "") val = "0";
-    }
-
-    setter(val);
-  };
-
 
 
   // -------------------------
@@ -521,16 +390,45 @@ export default function TradeOrderScreen({ navigation }) {
     };
     setSegment(map[name]);
   };
+  const validateOrder = () => {
+    const p = parseFloat(price || 0);
+    const q = parseInt(qty || 0);
+    const tg = parseFloat(target || 0);
+    const sl = parseFloat(stopLoss || 0);
 
+    const ltp = parseFloat(
+      selected === "NSE"
+        ? nseLtp.replace("₹", "")
+        : bseLtp.replace("₹", "")
+    ) || 0;
+
+    const br = parseFloat(brokerage || 0);
+    const ch = parseFloat(charges || 0);
+    const tx = parseFloat(taxes || 0);
+    const bal = parseFloat(balance || 0);
+
+    // 1) Quantity > 0
+    if (q <= 0) return false;
+
+    // 2) Total cost must not exceed balance
+    const totalCost = p * q + br + ch + tx;
+    if (totalCost > bal) return false;
+
+    // 3) Target validation (if placed)
+    if (tg > 0 && tg < ltp) return false;
+
+    // 4) Stop loss validation (if placed)
+    if (sl > 0 && sl > ltp) return false;
+
+    return true;
+  };
 
   const combinedCharges =
     parseFloat(charges || 0) + parseFloat(taxes || 0);
 
   useEffect(() => {
-    const ok = runValidations();
-    setIsOrderValid(ok);
-  }, [price, qty, target, stopLoss, balance, brokerage, charges, taxes, nseLtp, bseLtp]);
-
+    setIsOrderValid(validateOrder());
+  }, [price, qty, target, stopLoss, balance, brokerage, charges, taxes]);
   const isModifyMode = internaltype?.toLowerCase() === "modify";
   return (
     <SafeAreaView edges={['left', 'top']} style={styles.container}>
@@ -577,33 +475,31 @@ export default function TradeOrderScreen({ navigation }) {
             <OrderInputBox
               label="Price"
               value={price}
-              onChange={(v) => handleNumericInput(v, setPrice)}
+              onChange={handleUserPriceInput}
               isValid={isPriceValid}
-              onWarningPress={() => setShowTooltip(true)}
             />
-
 
             <OrderInputBox
               label="Quantity"
               value={qty}
-              onChange={(v) => handleNumericInput(v, setQty)}
+              onChange={setQty}
               isValid={isQtyValid}
-              onWarningPress={() => setShowTooltip(true)}
             />
+
             <OrderInputBox
               label="Target"
               value={target}
-              onChange={(v) => handleNumericInput(v, setTarget)}
+              onChange={setTarget}
               isValid={isTargetValid}
-              onWarningPress={() => setShowTooltip(true)}
+              editable={!isModifyMode}
             />
 
             <OrderInputBox
               label="Stop Loss"
               value={stopLoss}
-              onChange={(v) => handleNumericInput(v, setStopLoss)}
+              onChange={setStopLoss}
               isValid={isStopLossValid}
-              onWarningPress={() => setShowTooltip(true)}
+              editable={!isModifyMode}
             />
 
             {/* <Text>{internaltype}</Text> */}
@@ -624,205 +520,155 @@ export default function TradeOrderScreen({ navigation }) {
 
           </View>
         </ScrollView>
-      </KeyboardAwareScrollView>
-      <View style={styles.bottomContainer}>
+</KeyboardAwareScrollView>
+        <View style={styles.bottomContainer}>
 
-        <View style={styles.summaryContainer}>
-          <View style={styles.row}>
-            <Text style={styles.label}>Balance available</Text>
-            <Text style={styles.value}>₹{format4(balance)}</Text>
-          </View>
+          <View style={styles.summaryContainer}>
+            <View style={styles.row}>
+              <Text style={styles.label}>Balance available</Text>
+              <Text style={styles.value}>₹{format4(balance)}</Text>
+            </View>
 
-          <View style={styles.row}>
-            <Text style={styles.label}>Order value</Text>
-            <Text style={styles.value}>₹{format2(orderValue)}</Text>
-          </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Order value</Text>
+              <Text style={styles.value}>₹{format2(orderValue)}</Text>
+            </View>
 
-          <View style={styles.row}>
-            <Text style={styles.label}>Brokerage</Text>
-            <Text style={styles.value}>₹{format2(brokerage)}</Text>
-          </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Brokerage</Text>
+              <Text style={styles.value}>₹{format2(brokerage)}</Text>
+            </View>
 
-          <View style={styles.row}>
-            <Text style={styles.label}>Charges</Text>
-            <Text style={styles.value}>
-              ₹{format2(combinedCharges)}
-            </Text>
-          </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Charges</Text>
+              <Text style={styles.value}>
+                ₹{format2(combinedCharges)}
+              </Text>
+            </View>
 
-          <View style={styles.row}>
-            <Text style={styles.label}>Closing balance</Text>
-            <Text style={styles.value}>₹{format2(closingBalance)}</Text>
-          </View>
-          <Ionicons
-            name="refresh"
-            size={20}
-            color="#210F47"
-            style={styles.refreshIcon}
-            onPress={() => {
-              fetchFunds(selectedSegmentType);
-              fetchLtp();
-              fetchBrokerage();
-            }}
-          />
-        </View>
-        {/* SWIPE BUTTON */}
-        <View style={{ position: "relative", width: "100%" }}>
-          <SwipeButton
-            key={swipeKey}
-            disabled={false}
-            title="Swipe right to buy >>"
-            titleColor="#210F47"
-            titleFontSize={14}
-            railBackgroundColor="#ffffff"
-            railFillBackgroundColor="#ffffff"
-            thumbIconBackgroundColor="#4CAF50"
-            thumbIconBorderColor="transparent"
-            railFillBorderColor="transparent"
-            disabledThumbIconBackgroundColor="#4CAF50"
-            disabledRailBackgroundColor="#ffffff"
-            containerStyles={{
-              borderRadius: 25,
-              height: 52,
-              width: "100%",
-              backgroundColor: "#ffffff",
-            }}
-
-            thumbIconComponent={() => (
-              <Text style={{ color: "#fff", fontWeight: "700" }}>Buy</Text>
-            )}
-            onSwipeSuccess={() => {
-              if (!authToken) {
-                setShowAngelOneModal(true);
-                setSwipeKey(Date.now());
-                return;
-              }
-              if (!isOrderValid) {
-                setShowTooltip(true);
-                setSwipeKey(Date.now());
-                return;
-              }
-
-              // if (!isOrderValid) {
-              //   alert("⚠ Fix order conditions");
-              //   setSwipeKey(Date.now());
-              //   return;
-              // }
-              // placeOrder();
-              if (internaltype?.toLowerCase() === "modify") {
-                modifyOrder();
-              } else {
-                placeOrder();
-              }
-              setSwipeKey(Date.now());
-            }}
-          />
-
-          <TouchableOpacity
-            onPress={() => setShowAngelOneModal(true)}
-            style={{
-              position: "absolute",
-              right: 12,
-              top: 14,
-              zIndex: 10,
-            }}
-          >
-            <Image
-              source={require("../../assets/angelone.png")}
-              style={{
-                width: 35,
-                height: 35,
-                resizeMode: "contain",
+            <View style={styles.row}>
+              <Text style={styles.label}>Closing balance</Text>
+              <Text style={styles.value}>₹{format2(closingBalance)}</Text>
+            </View>
+            <Ionicons
+              name="refresh"
+              size={20}
+              color="#210F47"
+              style={styles.refreshIcon}
+              onPress={() => {
+                fetchFunds(selectedSegmentType);
+                fetchLtp();
+                fetchBrokerage();
               }}
             />
-          </TouchableOpacity>
+          </View>
+          {/* SWIPE BUTTON */}
+          <View style={{ position: "relative", width: "100%" }}>
+            <SwipeButton
+              key={swipeKey}
+              disabled={false}
+              title="Swipe right to buy >>"
+              titleColor="#210F47"
+              titleFontSize={14}
+              railBackgroundColor="#ffffff"
+              railFillBackgroundColor="#ffffff"
+              thumbIconBackgroundColor="#4CAF50"
+              thumbIconBorderColor="transparent"
+              railFillBorderColor="transparent"
+              disabledThumbIconBackgroundColor="#4CAF50"
+              disabledRailBackgroundColor="#ffffff"
+              containerStyles={{
+                borderRadius: 25,
+                height: 52,
+                width: "100%",
+                backgroundColor: "#ffffff",
+              }}
 
-        </View>
-      </View>
-
-      <Modal
-        visible={showTooltip}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowTooltip(false)}
-      >
-        <View style={{
-          flex: 1,
-          backgroundColor: "rgba(0,0,0,0.5)",
-          justifyContent: "center",
-          alignItems: "center"
-        }}>
-          <View style={{
-            width: "85%",
-            backgroundColor: "#fff",
-            borderRadius: 12,
-            padding: 20
-          }}>
-            <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 10 }}>
-              ⚠ Order Issues
-            </Text>
-
-            {validationErrors.map((e, i) => (
-              <Text key={i} style={{ fontSize: 14, marginBottom: 6, color: "#222" }}>
-                • {e}
-              </Text>
-            ))}
+              thumbIconComponent={() => (
+                <Text style={{ color: "#fff", fontWeight: "700" }}>Buy</Text>
+              )}
+              onSwipeSuccess={() => {
+                if (!authToken) {
+                  setShowAngelOneModal(true);
+                  setSwipeKey(Date.now());
+                  return;
+                }
+                if (!isOrderValid) {
+                  alert("⚠ Fix order conditions");
+                  setSwipeKey(Date.now());
+                  return;
+                }
+                // placeOrder();
+                if (internaltype?.toLowerCase() === "modify") {
+                  modifyOrder();
+                } else {
+                  placeOrder();
+                }
+                setSwipeKey(Date.now());
+              }}
+            />
 
             <TouchableOpacity
-              onPress={() => setShowTooltip(false)}
+              onPress={() => setShowAngelOneModal(true)}
               style={{
-                marginTop: 15,
-                paddingVertical: 10,
-                backgroundColor: "#210F47",
-                borderRadius: 8
+                position: "absolute",
+                right: 12,
+                top: 14,
+                zIndex: 10,
               }}
             >
-              <Text style={{ color: "#fff", textAlign: "center", fontSize: 16 }}>
-                OK
-              </Text>
+              <Image
+                source={require("../../assets/angelone.png")}
+                style={{
+                  width: 35,
+                  height: 35,
+                  resizeMode: "contain",
+                }}
+              />
             </TouchableOpacity>
+
           </View>
         </View>
-      </Modal>
+        {/* ⭐ AngelOne Login Modal */}
+        {/* ⭐ AngelOne Login Modal */}
+        <Modal
+          visible={showAngelOneModal}
+          animationType="slide"
+          transparent={false}
+          onRequestClose={() => setShowAngelOneModal(false)}
+        >
+          <View style={{ flex: 1, backgroundColor: "#fff" }}>
 
-      <Modal
-        visible={showAngelOneModal}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setShowAngelOneModal(false)}
-      >
-        <View style={{ flex: 1, backgroundColor: "#fff" }}>
+            <TouchableOpacity
+              style={{
+                position: "absolute",
+                top: 40,
+                right: 20,
+                zIndex: 999,
+                backgroundColor: "#eee",
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+              onPress={() => setShowAngelOneModal(false)}
+            >
+              <Text style={{ fontSize: 18 }}>✕</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={{
-              position: "absolute",
-              top: 40,
-              right: 20,
-              zIndex: 999,
-              backgroundColor: "#eee",
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-            onPress={() => setShowAngelOneModal(false)}
-          >
-            <Text style={{ fontSize: 18 }}>✕</Text>
-          </TouchableOpacity>
-
-          <WebView
-            source={{
-              uri:
-                "https://smartapi.angelone.in/publisher-login?api_key=IG8g0BMf&state=tradeorder",
-            }}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            useWebKit={true}
-            onNavigationStateChange={handleAngelOneNavigation}
-          />
-        </View>
-      </Modal>
+            <WebView
+              source={{
+                uri:
+                  "https://smartapi.angelone.in/publisher-login?api_key=IG8g0BMf&state=tradeorder",
+              }}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              useWebKit={true}
+              onNavigationStateChange={handleAngelOneNavigation}
+            />
+          </View>
+        </Modal>
     </SafeAreaView>
   );
 }

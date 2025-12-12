@@ -21,6 +21,7 @@ import { apiUrl } from '../utils/apiUrl';
 import { useAuth } from '../context/AuthContext';
 import rupeeIcon from "../../assets/dropdownrupees.png";
 import watchlistIcon from "../../assets/dropdownwatchlist.png";
+import Profile from "../../assets/Profile.png";
 
 const WISHLIST_API = `${apiUrl}/api/wishlistcontrol`;
 const TopHeader = ({ onWatchlistAdded }) => {
@@ -117,50 +118,50 @@ const TopHeader = ({ onWatchlistAdded }) => {
     });
   };
 
-  const handleLogout = async () => {
-    try {
-      // 🔥 STEP 1: If any required value is missing → direct logout
-      if (!userId || !authToken || !clientId) {
+  // const handleLogout = async () => {
+  //   try {
+  //     // 🔥 STEP 1: If any required value is missing → direct logout
+  //     if (!userId || !authToken || !clientId) {
 
-        await clearAuth();
-        hideMenu();
+  //       await clearAuth();
+  //       hideMenu();
 
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "Login" }],
-        });
+  //       navigation.reset({
+  //         index: 0,
+  //         routes: [{ name: "Login" }],
+  //       });
 
-        return; // ⛔ STOP HERE → No API call
-      }
+  //       return; // ⛔ STOP HERE → No API call
+  //     }
 
-      // 🔥 STEP 2: All values exist → API call
-      const res = await fetch(`${apiUrl}/api/check-user/logout`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          authToken,
-          clientcode: clientId,
-        }),
-      });
+  //     // 🔥 STEP 2: All values exist → API call
+  //     const res = await fetch(`${apiUrl}/api/check-user/logout`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         userId,
+  //         authToken,
+  //         clientcode: clientId,
+  //       }),
+  //     });
 
-      const data = await res.json();
-      if (data.status) {
-        await clearAuth();
-        hideMenu();
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "Login" }],
-        });
-      }
-    } catch (err) {
-      Alert.alert("Error", "Logout failed");
-    }
-  };
+  //     const data = await res.json();
+  //     if (data.status) {
+  //       await clearAuth();
+  //       hideMenu();
+  //       navigation.reset({
+  //         index: 0,
+  //         routes: [{ name: "Login" }],
+  //       });
+  //     }
+  //   } catch (err) {
+  //     Alert.alert("Error", "Logout failed");
+  //   }
+  // };
 
 
 
-  const menuOptions = [{ label: "Logout", action: handleLogout }];
+  // const menuOptions = [{ label: "Logout", action: handleLogout }];
 
   // 🔻 Fetch ONLY existing watchlists
   const fetchWatchlists = async () => {
@@ -237,12 +238,13 @@ const TopHeader = ({ onWatchlistAdded }) => {
       <StatusBar backgroundColor="#f2edf9" barStyle="dark-content" />
       <View style={styles.header}>
         {/* Avatar */}
-        <Image
-          source={{
-            uri: "https://randomuser.me/api/portraits/men/10.jpg",
-          }}
-          style={styles.avatar}
-        />
+        {/* Avatar → Click to open ProfileScreen */}
+        <TouchableOpacity onPress={() => navigation.navigate("ProfileScreen")}>
+          <Image
+            source={Profile} 
+            style={styles.avatar}
+          />
+        </TouchableOpacity>
 
         {/* SEARCH BAR */}
         <View style={styles.searchContainer}>
@@ -328,7 +330,7 @@ const TopHeader = ({ onWatchlistAdded }) => {
       </View>
 
       {/* Menu Modal */}
-      <Modal
+      {/* <Modal
         visible={menuVisible}
         transparent={true}
         animationType="none"
@@ -351,7 +353,7 @@ const TopHeader = ({ onWatchlistAdded }) => {
             ))}
           </Animated.View>
         </View>
-      </Modal>
+      </Modal> */}
 
       {/* 🔻 WATCHLIST POPUP — ONLY EXISTING LISTS */}
       <Modal
@@ -592,7 +594,7 @@ const styles = StyleSheet.create({
   iconImage: {
     width: 22,
     height: 22,
-},
+  },
 });
 
 export default TopHeader;

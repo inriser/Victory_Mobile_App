@@ -121,8 +121,12 @@ export default function LoginScreen({ navigation }) {
                 key={index}
                 ref={(el) => (inputRefs.current[index] = el)}
                 style={styles.otpBox}
-                value={digit}
-                onChangeText={(text) => handleOtpChange(text, index)}
+                value={digit ? "*" : ""}
+                onChangeText={(text) => {
+                  // Real digit store karo, but TextInput me mat dikhao
+                  const newDigit = text.slice(-1);
+                  handleOtpChange(newDigit, index);
+                }}
                 keyboardType="number-pad"
                 maxLength={1}
                 textAlign="center"

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View, Text, TouchableOpacity, Modal, Alert } from 'react-native';
+import { ScrollView, StyleSheet, View, Image, Text, TouchableOpacity, Modal, Alert } from 'react-native';
 import TopHeader from "../components/TopHeader";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomTabBar from '../components/BottomTabBar';
@@ -286,7 +286,10 @@ const OrdersScreen = () => {
 
                         {/* SORT BUTTON */}
                         <TouchableOpacity style={styles.iconRow} onPress={() => setSortOpen(true)}>
-                            <Ionicons name="swap-vertical" size={16} color="#000" />
+                            <Image
+                                source={require("../../assets/sorticon.png")}
+                                style={{ width: 20, height: 20, resizeMode: "contain" }}
+                            />
                             <Text style={styles.actionText}>Sort</Text>
                         </TouchableOpacity>
 
@@ -388,12 +391,13 @@ const OrdersScreen = () => {
                             if (selectedTab === 2) {
                                 return (
                                     <OrderItemCard
-                                        key={uniqueKey}
+                                        key={`${item.orderid}_${index}`}
                                         name={item.trading_symbol}
                                         type={item.transaction_type?.toUpperCase()}
                                         shares={`${item.unfilledshares}/${Number(item.filledshares) + Number(item.unfilledshares)}`}
                                         status={item.status}
                                         price={`₹ ${Number(item.price).toFixed(2)}`}
+                                        broker={item.broker}
                                         onModify={() => {
                                             navigation.navigate('TradeOrder', {
                                                 symbol: item.trading_symbol,
@@ -436,7 +440,8 @@ const OrdersScreen = () => {
                             if (selectedTab === 1) {
                                 return (
                                     <TradeExecutedCard
-                                        key={uniqueKey}
+                                        key={`${item.orderid || item.fillid || item.symboltoken}_${index}`}
+
                                         exchange={item.exchange}
                                         producttype={item.producttype}
                                         tradingsymbol={item.tradingsymbol}
@@ -454,7 +459,7 @@ const OrdersScreen = () => {
                             // 🔹 Positions Tab (selectedTab === 3)
                             return (
                                 <PositionCard
-                                    key={uniqueKey}
+                                    key={`${item.tradingsymbol}_${index}`}
                                     tradingsymbol={item.tradingsymbol}
                                     exchange={item.exchange}
                                     producttype={item.producttype}

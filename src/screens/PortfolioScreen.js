@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View, Text, TouchableOpacity, Modal } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity, Modal, Image } from 'react-native';
 import TopHeader from "../components/TopHeader";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomTabBar from '../components/BottomTabBar';
@@ -29,6 +29,27 @@ const PorfolioScreen = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState("All");
     const { authToken } = useAuth();
+    const [sortOpen, setSortOpen] = useState(false);
+    const [brokerFilters, setBrokerFilters] = useState([]);
+    const [selectedBroker, setSelectedBroker] = useState(null);
+
+    const applyBrokerFilter = (brokerId) => {
+
+        setSelectedBroker(brokerId);  // <-- ⭐ store selected broker
+
+        if (!brokerId) {
+            setOrders(originalOrders);
+            return;
+        }
+
+        const filtered = originalOrders.filter(
+            (item) => item.broker_id === brokerId
+        );
+
+        setOrders(filtered);
+    };
+
+
     useEffect(() => {
         if (route.params?.defaultTab) {
             setSelectedTab(route.params.defaultTab);
@@ -72,24 +93,76 @@ const PorfolioScreen = () => {
         fetchOrders();
     }, [selectedTab]);
 
-    // 📌 SORT LOGIC (3-step toggle)
-    const sortOrders = () => {
-        let newOrders = [...orders];
+    useEffect(() => {
+        const fetchBrokers = async () => {
+            try {
+                const userId = await AsyncStorage.getItem("userId");
+                const deviceId = await getDeviceId();
 
-        if (sortOrder === null) {
-            newOrders.sort((a, b) => Number(b.price) - Number(a.price)); // DESC
-            setSortOrder("desc");
-        }
-        else if (sortOrder === "desc") {
-            newOrders.sort((a, b) => Number(a.price) - Number(b.price)); // ASC
-            setSortOrder("asc");
-        }
-        else {
-            newOrders = [...originalOrders]; // RESET
-            setSortOrder(null);
+                const response = await fetch(`${apiUrl}/api/portfolio/getAllBrokers`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${authToken}`,
+                        "Content-Type": "application/json",
+                        "userid": userId,
+                        "device_mac": deviceId
+                    }
+                });
+
+                const text = await response.text();
+                const json = JSON.parse(text);
+
+                console.log("BROKERS RESPONSE:", json);
+
+                if (json.success) {
+                    setBrokerFilters(json.data);
+                }
+
+            } catch (err) {
+                console.log("Broker fetch error:", err);
+            }
+        };
+
+        // 👇 CALL IT PROPERLY
+        fetchBrokers();
+    }, []);
+
+    const sortOrders = (sortType) => {
+        let sorted = [...orders];
+
+        // A-Z
+        if (sortType === "A-Z") {
+            sorted.sort((a, b) =>
+                (a.tradingsymbol || "").localeCompare(b.tradingsymbol || "")
+            );
         }
 
-        setOrders(newOrders);
+        // Z-A
+        else if (sortType === "Z-A") {
+            sorted.sort((a, b) =>
+                (b.tradingsymbol || "").localeCompare(a.tradingsymbol || "")
+            );
+        }
+
+        // High-Low → on invested value
+        else if (sortType === "High-Low") {
+            sorted.sort((a, b) => {
+                const investedA = Number(a.averageprice || 0) * Number(a.realisedquantity || 0);
+                const investedB = Number(b.averageprice || 0) * Number(b.realisedquantity || 0);
+                return investedB - investedA;
+            });
+        }
+
+        // Low-High → on invested value
+        else if (sortType === "Low-High") {
+            sorted.sort((a, b) => {
+                const investedA = Number(a.averageprice || 0) * Number(a.realisedquantity || 0);
+                const investedB = Number(b.averageprice || 0) * Number(b.realisedquantity || 0);
+                return investedA - investedB;
+            });
+        }
+
+        setOrders(sorted);
     };
 
     // 📌 FILTER LOGIC
@@ -117,14 +190,6 @@ const PorfolioScreen = () => {
             <SafeAreaView edges={["top", "bottom"]} style={styles.container}>
                 <TopHeader />
 
-                {/* Tabs */}
-                {/* <View style={styles.topSliders}>
-                    <TradeOrderTabs
-                        activeTab={selectedTab}
-                        onTabChange={(tab) => setSelectedTab(tab)}
-                    />
-                </View> */}
-
                 {/* Sort + Filter Bar */}
                 <View style={styles.orderTopBar}>
                     <Text style={styles.orderTitle}>
@@ -132,28 +197,49 @@ const PorfolioScreen = () => {
                     </Text>
                     <View style={styles.row}>
                         {/* SORT BUTTON */}
-                        <TouchableOpacity style={styles.iconRow} onPress={sortOrders}>
-                            {/* Icon Logic */}
-                            {sortOrder === null && (
-                                <Ionicons name="swap-vertical" size={16} color="#000" />
-                            )}
-                            {sortOrder === "asc" && (
-                                <Ionicons name="arrow-up" size={16} color="#000" />
-                            )}
-                            {sortOrder === "desc" && (
-                                <Ionicons name="arrow-down" size={16} color="#000" />
-                            )}
+                        <TouchableOpacity style={styles.iconRow} onPress={() => setSortOpen(true)}>
+                            <Image
+                                source={require("../../assets/sorticon.png")}
+                                style={{ width: 20, height: 20, resizeMode: "contain" }}
+                            />
                             <Text style={styles.actionText}>Sort</Text>
                         </TouchableOpacity>
 
                         {/* FILTER BUTTON */}
                         <TouchableOpacity style={styles.iconRow} onPress={() => setIsFilterOpen(true)}>
-                            <Ionicons name="funnel-outline" size={16} color="#000" />
+                            <Ionicons
+                                name={selectedBroker ? "funnel" : "funnel-outline"}
+                                size={16}
+                                color="#000"
+                            />
                             <Text style={styles.actionText}>Filter</Text>
                         </TouchableOpacity>
 
                     </View>
                 </View>
+                {/* SORT MODAL */}
+                <Modal visible={sortOpen} transparent animationType="fade">
+                    <TouchableOpacity
+                        style={styles.overlay}
+                        onPress={() => setSortOpen(false)}
+                        activeOpacity={1}
+                    >
+                        <View style={styles.filterDropdown}>
+                            {["A-Z", "Z-A", "High-Low", "Low-High"].map((option) => (
+                                <TouchableOpacity
+                                    key={option}
+                                    style={styles.dropdownItem}
+                                    onPress={() => {
+                                        setSortOpen(false);
+                                        sortOrders(option);
+                                    }}
+                                >
+                                    <Text style={styles.dropdownText}>{option}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </TouchableOpacity>
+                </Modal>
 
                 {/* FILTER MODAL */}
                 <Modal
@@ -168,19 +254,33 @@ const PorfolioScreen = () => {
                         onPress={() => setIsFilterOpen(false)}
                     >
                         <View style={styles.filterDropdown}>
-                            {filterOptions.map((option, index) => (
+
+                            {/* ALWAYS SHOW ALL OPTION FIRST */}
+                            <TouchableOpacity
+                                style={styles.dropdownItem}
+                                onPress={() => {
+                                    setIsFilterOpen(false);
+                                    applyBrokerFilter(null);
+                                }}
+                            >
+                                <Text style={styles.dropdownText}>All</Text>
+                            </TouchableOpacity>
+
+                            {/* NOW SHOW ALL BROKERS */}
+                            {brokerFilters.map((item) => (
                                 <TouchableOpacity
-                                    key={index}
+                                    key={item.id}
                                     style={styles.dropdownItem}
                                     onPress={() => {
                                         setIsFilterOpen(false);
-                                        applyFilter(option);
+                                        applyBrokerFilter(item.id);
                                     }}
                                 >
-                                    <Text style={styles.dropdownText}>{option}</Text>
+                                    <Text style={styles.dropdownText}>{item.name}</Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
+
                     </TouchableOpacity>
                 </Modal>
 

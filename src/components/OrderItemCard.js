@@ -1,8 +1,8 @@
 import React, { useRef } from "react";
-import { View, Text, StyleSheet, Alert } from "react-native";
+import { View, Text, StyleSheet, Alert, Image } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 
-const OrderItemCard = ({ name, type, shares, status, price, ltp, onModify, onCancel }) => {
+const OrderItemCard = ({ name, type, shares, status, price, ltp, onModify, onCancel, broker }) => {
     const isCancelled = status?.toString().toLowerCase() === "cancelled";
     const statusLower = status?.toString().trim().toLowerCase();
 
@@ -135,7 +135,15 @@ const OrderItemCard = ({ name, type, shares, status, price, ltp, onModify, onCan
                         <Text style={styles.stockName} numberOfLines={1}>{name}</Text>
 
                         <View style={styles.buyRow}>
-                            <View style={[styles.buyDot, { backgroundColor: getTypeColor() }]} />
+                            {broker === 1 ? (
+                                <Image
+                                    source={require("../../assets/angelone.png")}
+                                    style={styles.brokerIcon}
+                                />
+                            ) : (
+                                <></>
+                                // <View style={[styles.buyDot, { backgroundColor: getTypeColor() }]} />
+                            )}
 
                             <Text style={[styles.buyText, { color: getTypeColor() }]}>
                                 {type ? type.toUpperCase() : ""}
@@ -282,4 +290,11 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         color: "#000",
     },
+    brokerIcon: {
+        width: 12,
+        height: 12,
+        marginRight: 6,
+        borderRadius: 20,
+    },
+
 });

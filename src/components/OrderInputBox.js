@@ -1,5 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet, TextInput } from "react-native";
+import {
+    View,
+    Text,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 const OrderInputBox = ({
@@ -7,40 +13,53 @@ const OrderInputBox = ({
     value,
     onChange,
     isValid = true,
-    editable = true,   // ⭐ NEW: Add editable prop
+    editable = true,
+    onWarningPress,   // ⭐ Correctly received prop
 }) => {
     return (
         <View style={styles.container}>
-            {/* Left Side: Label */}
+
+            {/* Left Label */}
             <View style={styles.labelBox}>
                 <Text style={styles.labelText}>{label}</Text>
             </View>
 
-            {/* Right Side: Input + Tick */}
+            {/* Right Input + Icon */}
             <View
                 style={[
                     styles.valueBox,
-                    !editable && styles.disabledBox,  // ⭐ disabled styling
+                    !editable && styles.disabledBox,
                 ]}
             >
                 <TextInput
                     style={[
                         styles.input,
-                        !editable && styles.disabledText  // ⭐ grey text
+                        !editable && styles.disabledText
                     ]}
                     value={value}
                     onChangeText={onChange}
                     keyboardType="numeric"
                     placeholder="0"
-                    editable={editable}       // ⭐ Main control here
+                    editable={editable}
                     placeholderTextColor="#777"
                 />
 
+                {/* ---- ICONS ---- */}
                 {value !== "" && (
                     isValid ? (
-                        <Ionicons name="checkmark-circle" size={20} color="#22C55E" />
+                        <Ionicons
+                            name="checkmark-circle"
+                            size={20}
+                            color="#22C55E"
+                        />
                     ) : (
-                        <Ionicons name="alert-circle" size={20} color="#ffcc00" />
+                        <TouchableOpacity onPress={onWarningPress}>
+                            <Ionicons
+                                name="alert-circle"
+                                size={20}
+                                color="#ffcc00"
+                            />
+                        </TouchableOpacity>
                     )
                 )}
             </View>

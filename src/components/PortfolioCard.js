@@ -145,6 +145,6 @@ const styles = StyleSheet.create({
 
     today: {
         fontSize: 10,
-        textAlign:"right"
+        textAlign: "right"
     },
 });

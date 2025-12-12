@@ -25,6 +25,10 @@ import OrdersScreen from "./src/screens/OrdersScreen";
 import TradeScreen from './src/screens/TradeScreen';
 import PortfolioScreen from './src/screens/PortfolioScreen';
 import StockTimelineScreen from './src/screens/StockTimelineScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
+import StocksScreen from './src/screens/StocksScreen';
+import IndicesDetailScreen from './src/screens/IndicesDetailScreen';
+import IndicesListScreen from './src/screens/IndicesListScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -131,6 +135,26 @@ export default function App() {
                <Stack.Screen
                 name="StockTimelineScreen"
                 component={StockTimelineScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="ProfileScreen"
+                component={ProfileScreen}
+                options={{ headerShown: false }}
+              />
+                <Stack.Screen
+                name="Stocks"
+                component={StocksScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="IndicesDetail"
+                component={IndicesDetailScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="IndicesList"
+                component={IndicesListScreen}
                 options={{ headerShown: false }}
               />
             </Stack.Navigator>
