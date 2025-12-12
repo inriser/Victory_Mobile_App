@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 
-const MarketTabs = ({ onExchangeChange, onCategoryChange }) => {
-    const [exchange, setExchange] = useState('NSE');
-    const [activeTab, setActiveTab] = useState(null); // No tab selected by default
+const MarketTabs = ({ onExchangeChange, onCategoryChange, tabs = ['Indices', 'Sectors', 'Industries', 'Themes'], selectedExchange, activeTab: controlledActiveTab, initialActiveTab = null }) => {
+    const [exchange, setExchange] = useState(selectedExchange || 'NSE');
+
+    // Sync if selectedExchange prop changes
+    React.useEffect(() => {
+        if (selectedExchange) setExchange(selectedExchange);
+    }, [selectedExchange]);
+
+    const [internalActiveTab, setInternalActiveTab] = useState(initialActiveTab); // No tab selected by default
+
+    // Use controlled activeTab if provided, otherwise use internal state
+    const activeTab = controlledActiveTab !== undefined ? controlledActiveTab : internalActiveTab;
 
     const handleExchangeToggle = (exch) => {
         setExchange(exch);
@@ -11,11 +20,14 @@ const MarketTabs = ({ onExchangeChange, onCategoryChange }) => {
     };
 
     const handleTabPress = (tab) => {
-        setActiveTab(tab);
+        // Only update internal state if not controlled
+        if (controlledActiveTab === undefined) {
+            setInternalActiveTab(tab);
+        }
         onCategoryChange && onCategoryChange(tab);
     };
 
-    const tabs = ['Indices', 'Sectors', 'Industries', 'Themes'];
+    // const tabs = ['Indices', 'Sectors', 'Industries', 'Themes'];
 
     return (
         <View style={styles.container}>

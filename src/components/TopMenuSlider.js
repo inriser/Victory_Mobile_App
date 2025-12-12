@@ -28,6 +28,7 @@ const TopMenuSlider = ({ currentRoute: propCurrentRoute }) => {
             'NewsScreen': 'NewsScreen',
             'OrdersScreen': 'OrdersScreen',
             'TradeScreen': 'TradeScreen',
+            'Stocks': 'Stocks',
         };
 
         return routeToTabMap[currentRoute] === tabName;
@@ -38,6 +39,9 @@ const TopMenuSlider = ({ currentRoute: propCurrentRoute }) => {
         switch (tabName) {
             case 'Home':
                 navigation.navigate('Home');
+                break;
+            case 'Stocks':
+                navigation.navigate('Stocks');
                 break;
             case 'Watchlists':
                 navigation.navigate('TradeOrderList');
@@ -79,6 +83,21 @@ const TopMenuSlider = ({ currentRoute: propCurrentRoute }) => {
                         isActiveTab('Home') && styles.activeTabText
                     ]}>
                         Home
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[
+                        styles.tabWhite,
+                        isActiveTab('Stocks') && styles.activeTab
+                    ]}
+                    onPress={() => handleTabPress('Stocks')}
+                >
+                    <Text style={[
+                        styles.tabTextDark,
+                        isActiveTab('Stocks') && styles.activeTabText
+                    ]}>
+                        Stocks
                     </Text>
                 </TouchableOpacity>
 

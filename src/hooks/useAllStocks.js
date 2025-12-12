@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiUrl } from '../utils/apiUrl';
 
-export const useAllStocks = (limit = 100, sortBy = 'price_desc') => {
+export const useAllStocks = (limit = 100, sortBy = 'price_desc', indexName = null, exchange = null) => {
   const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -12,8 +12,6 @@ export const useAllStocks = (limit = 100, sortBy = 'price_desc') => {
   const [dataFetched, setDataFetched] = useState(false);
 
   const fetchStocks = useCallback(async (currentOffset) => {
-    // If loading, skip. Exception: if it's a fresh load (offset 0) we might want to proceed if not already loading specific task
-    // But for simplicity, we just check generic loading state
     if (loading && currentOffset !== 0) return;
 
     try {
@@ -22,18 +20,42 @@ export const useAllStocks = (limit = 100, sortBy = 'price_desc') => {
 
       let fullList = allData;
 
-      // If we are at offset 0, we want to refresh data from server OR if we haven't fetched yet
+      // Fetch init data if needed
       if (currentOffset === 0 || !dataFetched) {
+        // 1. Fetch Master List
         const response = await fetch(`${apiUrl}/api/trading/watchlist`);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const result = await response.json();
 
+        // 2. If indexName is provided, fetch constituent symbols and filter
         if (result.success && Array.isArray(result.data)) {
-          fullList = result.data;
+          let filteredData = result.data;
+
+          if (indexName) {
+            try {
+              const idxRes = await fetch(`${apiUrl}/api/indices/${indexName}/stocks`);
+              const idxResult = await idxRes.json();
+              if (idxResult.success && Array.isArray(idxResult.data)) {
+                // Determine constituent symbols
+                const constituentSymbols = new Set(idxResult.data);
+
+                // Filter by Index Constituents
+                filteredData = filteredData.filter(s => constituentSymbols.has(s.symbol));
+              }
+            } catch (idxErr) {
+              console.warn(`Failed to filter by index ${indexName}:`, idxErr);
+            }
+          }
+
+          // Filter by Exchange (NSE/BSE) if provided
+          if (exchange) {
+            filteredData = filteredData.filter(stock =>
+              (stock.exchange && stock.exchange === exchange) ||
+              (stock.exch_seg && stock.exch_seg === exchange)
+            );
+          }
+
+          fullList = filteredData;
           setAllData(fullList);
           setDataFetched(true);
         } else {
@@ -51,7 +73,7 @@ export const useAllStocks = (limit = 100, sortBy = 'price_desc') => {
         id: `${stock.symbol}-${startIndex + index}`, // Ensure ID is unique and stable
         symbol: stock.symbol,
         name: stock.name || stock.symbol,
-        exchange: 'NSE',
+        exchange: stock.exch_seg || stock.exchange || 'NSE',
         ...stock
       }));
 
@@ -77,11 +99,19 @@ export const useAllStocks = (limit = 100, sortBy = 'price_desc') => {
     } finally {
       setLoading(false);
     }
-  }, [limit, sortBy, allData, dataFetched]); // removed 'loading' from dependency to avoid closures issues, handled inside
+  }, [limit, sortBy, allData, dataFetched, indexName]);
 
   useEffect(() => {
+    // Reset state when indexName changes
+    setOffset(0);
+    setStocks([]);
+    setDataFetched(false); // Force re-fetch
+    setAllData([]);
+    // fetchStocks(0) will be called by the dependency effect below or explicitly
+    // Actually we need to call it here or ensure dependency triggers it
     fetchStocks(0);
-  }, []);
+  }, [indexName]);
+
 
   const loadMore = useCallback(() => {
     if (!loading && hasMore) {

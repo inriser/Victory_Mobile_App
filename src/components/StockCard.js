@@ -54,7 +54,20 @@ const StockCard = ({ stock }) => {
 
   // X-axis formatting
   const formatXAxisLabel = (time, interval, index, total) => {
-    const date = new Date(time * 1000);
+    // Handle different time formats (Date string, timestamp in ms, timestamp in sec)
+    let date;
+    if (typeof time === 'string') {
+      date = new Date(time);
+    } else if (typeof time === 'number') {
+      // If time is less than year 2000 in ms, assume it's seconds
+      date = time < 946684800000 ? new Date(time * 1000) : new Date(time);
+    } else {
+      date = new Date(time);
+    }
+
+    // Validate date
+    if (isNaN(date.getTime())) return '';
+
     const labelFrequency = Math.max(1, Math.floor(total / 4));
     if (index % labelFrequency !== 0 && index !== total - 1) return '';
 
