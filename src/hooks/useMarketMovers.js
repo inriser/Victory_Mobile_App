@@ -22,7 +22,7 @@ export function useMarketMovers() {
       return;
     }
 
-    setLoading(true);
+    setLoading(false);
     setError(null);
 
     try {
@@ -35,9 +35,9 @@ export function useMarketMovers() {
 
       clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        throw new Error(`Error fetching movers: ${response.statusText}`);
-      }
+      // if (!response.ok) {
+      //   throw new Error(`Error fetching movers: ${response.statusText}`);
+      // }
 
       const result = await response.json();
 
@@ -55,7 +55,7 @@ export function useMarketMovers() {
   };
 
   useEffect(() => {
-    fetchData();
+    // fetchData();
   }, []);
 
   const refetch = () => fetchData(true);
